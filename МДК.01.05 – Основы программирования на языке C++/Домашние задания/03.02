@@ -1,0 +1,233 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <cctype>
+#include <algorithm>
+#include <sstream>
+
+// Задание 1
+size_t countWords(const std::string& str) {
+    size_t count = 0;
+    bool inWord = false;
+
+    for (char c : str) {
+        if (std::isspace(static_cast<unsigned char>(c))) {
+            inWord = false;
+        }
+        else if (!inWord) {
+            ++count;
+            inWord = true;
+        }
+    }
+
+    return count;
+}
+
+// Задание 2
+std::vector<std::string> splitString(const std::string& str) {
+    std::vector<std::string> result;
+
+    size_t start = 0;
+    size_t end = 0;
+
+    while (start < str.size() && std::isspace(str[start])) {
+        ++start;
+    }
+
+    while (start < str.size()) {
+        end = start;
+
+        while (end < str.size() && !std::isspace(str[end])) {
+            ++end;
+        }
+
+        if (start != end) {
+            result.push_back(str.substr(start, end - start));
+        }
+
+        start = end;
+        while (start < str.size() && std::isspace(str[start])) {
+            ++start;
+        }
+    }
+
+    return result;
+}
+
+// Задание 3
+bool isPalindrome(const std::string& str) {
+    if (str.empty()) {
+        return true;
+    }
+
+    size_t left = 0;
+    size_t right = str.length() - 1;
+
+    while (left < right) {
+
+        while (left < right && !std::isalnum(static_cast<unsigned char>(str[left]))) {
+            ++left;
+        }
+
+        while (left < right && !std::isalnum(static_cast<unsigned char>(str[right]))) {
+            --right;
+        }
+
+        if (std::tolower(static_cast<unsigned char>(str[left])) !=
+            std::tolower(static_cast<unsigned char>(str[right]))) {
+            return false;
+        }
+
+        ++left;
+        --right;
+    }
+
+    return true;
+}
+
+// Задание 4
+int sumValues(const std::string& str) {
+    int sum = 0;
+    size_t pos = 0;
+
+    while (pos < str.size()) {
+        size_t equalPos = str.find('=', pos);
+        if (equalPos == std::string::npos) {
+            break;
+        }
+
+        size_t semicolonPos = str.find(';', equalPos + 1);
+        if (semicolonPos == std::string::npos) {
+            semicolonPos = str.size();
+        }
+
+        std::string numStr = str.substr(equalPos + 1, semicolonPos - equalPos - 1);
+
+        try {
+            sum += std::stoi(numStr);
+        }
+        catch (...) {
+        }
+
+        pos = semicolonPos + 1;
+    }
+
+    return sum;
+}
+
+int sumValuesSimple(const std::string& str) {
+    int sum = 0;
+    int currentNum = 0;
+    bool inNumber = false;
+
+    for (char c : str) {
+        if (std::isdigit(static_cast<unsigned char>(c))) {
+            currentNum = currentNum * 10 + (c - '0');
+            inNumber = true;
+        }
+        else if (inNumber) {
+            sum += currentNum;
+            currentNum = 0;
+            inNumber = false;
+        }
+    }
+
+    if (inNumber) {
+        sum += currentNum;
+    }
+
+    return sum;
+}
+
+// Функция для демонстрации работы
+void demonstrateTasks() {
+    std::cout << "=== Демонстрация выполнения заданий ===\n\n";
+
+    // Задание 1
+    std::string text1 = "Hello world from C++ programming";
+    std::string text2 = "   Multiple   spaces   between   words   ";
+
+    std::cout << "Текст 1: \"" << text1 << "\"\n";
+    std::cout << "Количество слов: " << countWords(text1) << "\n\n";
+
+    std::cout << "Текст 2: \"" << text2 << "\"\n";
+    std::cout << "Количество слов: " << countWords(text2) << "\n\n";
+
+    // Задание 2
+    std::string splitText = "  split   this   string  into  words  ";
+    auto words = splitString(splitText);
+
+    std::cout << "Исходная строка: \"" << splitText << "\"\n";
+    std::cout << "Результат split:\n";
+    for (size_t i = 0; i < words.size(); ++i) {
+        std::cout << "  Слово " << i + 1 << ": \"" << words[i] << "\"\n";
+    }
+    std::cout << "\n";
+
+    // Задание 3
+    std::string palindrome1 = "А роза упала на лапу Азора";
+    std::string palindrome2 = "Madam, I'm Adam";
+    std::string notPalindrome = "Hello World";
+
+    std::cout << "Фраза 1: \"" << palindrome1 << "\"\n";
+    std::cout << "Палиндром? " << (isPalindrome(palindrome1) ? "ДА" : "НЕТ") << "\n\n";
+
+    std::cout << "Фраза 2: \"" << palindrome2 << "\"\n";
+    std::cout << "Палиндром? " << (isPalindrome(palindrome2) ? "ДА" : "НЕТ") << "\n\n";
+
+    std::cout << "Фраза 3: \"" << notPalindrome << "\"\n";
+    std::cout << "Палиндром? " << (isPalindrome(notPalindrome) ? "ДА" : "НЕТ") << "\n\n";
+
+    // Задание 4
+    std::string values1 = "x=10;y=2;z=50";
+    std::string values2 = "a=5;b=15;c=25;d=35";
+    std::string values3 = "temperature=100;pressure=50";
+
+    std::cout << "Строка 1: \"" << values1 << "\"\n";
+    std::cout << "Сумма значений: " << sumValues(values1);
+    std::cout << " (альтернативный метод: " << sumValuesSimple(values1) << ")\n\n";
+
+    std::cout << "Строка 2: \"" << values2 << "\"\n";
+    std::cout << "Сумма значений: " << sumValues(values2);
+    std::cout << " (альтернативный метод: " << sumValuesSimple(values2) << ")\n\n";
+
+    std::cout << "Строка 3: \"" << values3 << "\"\n";
+    std::cout << "Сумма значений: " << sumValues(values3);
+    std::cout << " (альтернативный метод: " << sumValuesSimple(values3) << ")\n";
+}
+
+void interactiveExample() {
+    std::cout << "\n\n Интерактивный пример\n";
+
+    // Задание 1
+    std::string input;
+    std::cout << "\nВведите строку для подсчета слов: ";
+    std::getline(std::cin, input);
+    std::cout << "Количество слов: " << countWords(input) << "\n";
+
+    // Задание 2
+    std::cout << "\nВведите строку для split: ";
+    std::getline(std::cin, input);
+    auto splitResult = splitString(input);
+    std::cout << "Разделенные слова:\n";
+    for (size_t i = 0; i < splitResult.size(); ++i) {
+        std::cout << "  [" << i << "] " << splitResult[i] << "\n";
+    }
+
+    // Задание 3
+    std::cout << "\nВведите строку для проверки на палиндром: ";
+    std::getline(std::cin, input);
+    std::cout << "Это палиндром? " << (isPalindrome(input) ? "ДА" : "НЕТ") << "\n";
+
+    // Задание 4
+    std::cout << "\nВведите строку например 'x=10;y=2;z=50': ";
+    std::getline(std::cin, input);
+    std::cout << "Сумма значений: " << sumValues(input) << "\n";
+}
+
+int main() {
+    demonstrateTasks();
+
+    return 0;
+}
+
