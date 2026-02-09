@@ -1,0 +1,220 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <stdexcept>
+
+using namespace std;
+
+//Задание 1 
+double divideWithException(double a, double b) {
+    if (b == 0) {
+        throw runtime_error("Ошибка: деление на ноль!");
+    }
+    return a / b;
+}
+
+// Задание 2 
+class DivisionByZeroException : public exception {
+private:
+    string message;
+public:
+    DivisionByZeroException(const string& msg = "Деление на ноль запрещено!") : message(msg) {}
+
+    const char* what() const noexcept override {
+        return message.c_str();
+    }
+};
+
+double divideWithCustomException(double a, double b) {
+    if (b == 0) {
+        throw DivisionByZeroException("Ошибка в функции divideWithCustomException: делитель равен 0");
+    }
+    return a / b;
+}
+
+//  Задание 3
+void readFileWithErrorHandling(const string& filename) {
+    ifstream file;
+
+    try {
+        file.open(filename);
+
+        if (!file.is_open()) {
+            throw runtime_error("Не удалось открыть файл: " + filename);
+        }
+
+        string line;
+        int lineCount = 0;
+
+        cout << "Содержимое файла " << filename << ":" << endl;
+
+        while (getline(file, line)) {
+            lineCount++;
+            cout << lineCount << ": " << line << endl;
+        }
+
+        if (lineCount == 0) {
+            cout << "Файл пуст." << endl;
+        }
+
+        cout << "Файл успешно прочитан. Всего строк: " << lineCount << endl;
+
+        file.close();
+    }
+    catch (const exception& e) {
+        if (file.is_open()) {
+            file.close();
+        }
+        cerr << "Ошибка при чтении файла: " << e.what() << endl;
+        throw; 
+    }
+}
+
+//Задание 4 
+enum class FileOperationResult {
+    SUCCESS,
+    FILE_NOT_FOUND,
+    PERMISSION_DENIED,
+    READ_ERROR
+};
+
+FileOperationResult oldReadFile(const string& filename, string& content) {
+    ifstream file(filename);
+
+    if (!file.is_open()) {
+        return FileOperationResult::FILE_NOT_FOUND;
+    }
+
+    string line;
+    while (getline(file, line)) {
+        content += line + "\n";
+    }
+
+    if (file.bad()) {
+        return FileOperationResult::READ_ERROR;
+    }
+
+    file.close();
+    return FileOperationResult::SUCCESS;
+}
+
+void newReadFileWithExceptions(const string& filename, string& content) {
+    ifstream file(filename);
+
+    if (!file.is_open()) {
+        throw runtime_error("Файл не найден: " + filename);
+    }
+
+    string line;
+    while (getline(file, line)) {
+        content += line + "\n";
+    }
+
+    if (file.bad()) {
+        throw runtime_error("Ошибка чтения файла: " + filename);
+    }
+
+    file.close();
+}
+
+int main() {
+
+
+    // Задание 1
+    try {
+        double result1 = divideWithException(10.0, 2.0);
+        cout << "10.0 / 2.0 = " << result1 << endl;
+
+        double result2 = divideWithException(10.0, 0.0);
+        cout << "10.0 / 0.0 = " << result2 << endl;
+    }
+    catch (const runtime_error& e) {
+        cerr << "Поймано исключение: " << e.what() << endl;
+    }
+    cout << endl;
+
+    // Задание 2
+    try {
+        double result1 = divideWithCustomException(15.0, 3.0);
+        cout << "15.0 / 3.0 = " << result1 << endl;
+
+        double result2 = divideWithCustomException(15.0, 0.0);
+        cout << "15.0 / 0.0 = " << result2 << endl;
+    }
+    catch (const DivisionByZeroException& e) {
+        cerr << "Поймано пользовательское исключение: " << e.what() << endl;
+    }
+    cout << endl;
+
+    // Задание 3
+
+    ofstream testFile("test_file.txt");
+    if (testFile.is_open()) {
+        testFile << "Строка 1: Привет, мир!" << endl;
+        testFile << "Строка 2: Это тестовый файл." << endl;
+        testFile << "Строка 3: Для демонстрации обработки исключений." << endl;
+        testFile.close();
+        cout << "Тестовый файл создан." << endl;
+    }
+
+    try {
+        readFileWithErrorHandling("test_file.txt");
+    }
+    catch (const exception& e) {
+        cerr << "Исключение в основном блоке: " << e.what() << endl;
+    }
+    cout << endl;
+
+    try {
+        readFileWithErrorHandling("несуществующий_файл.txt");
+    }
+    catch (const exception& e) {
+        cerr << "Исключение в основном блоке: " << e.what() << endl;
+    }
+    cout << endl;
+
+    // Задание 4
+
+    cout << "Старый подход (return-коды):" << endl;
+    string content;
+    FileOperationResult result = oldReadFile("test_file.txt", content);
+
+    switch (result) {
+    case FileOperationResult::SUCCESS:
+        cout << "Успешно прочитано. Содержимое:" << endl << content;
+        break;
+    case FileOperationResult::FILE_NOT_FOUND:
+        cout << "Ошибка: файл не найден" << endl;
+        break;
+    case FileOperationResult::PERMISSION_DENIED:
+        cout << "Ошибка: нет доступа к файлу" << endl;
+        break;
+    case FileOperationResult::READ_ERROR:
+        cout << "Ошибка чтения файла" << endl;
+        break;
+    }
+
+    cout << "\nНовый подход (исключения):" << endl;
+    string newContent;
+
+    try {
+        newReadFileWithExceptions("test_file.txt", newContent);
+        cout << "Успешно прочитано. Содержимое:" << endl << newContent;
+    }
+    catch (const runtime_error& e) {
+        cerr << "Поймано исключение: " << e.what() << endl;
+    }
+
+    cout << "\nПопытка чтения несуществующего файла:" << endl;
+    try {
+        newReadFileWithExceptions("missing_file.txt", newContent);
+        cout << "Успешно прочитано." << endl;
+    }
+    catch (const runtime_error& e) {
+        cerr << "Поймано исключение: " << e.what() << endl;
+    }
+
+    remove("test_file.txt");
+
+    return 0;
+}
