@@ -1,0 +1,52 @@
+using System;
+
+class HangmanSimple
+{
+    static void Main()
+    {
+        string word = "яблоко"; 
+        string hidden = "______";
+        int tries = 6;
+
+        Console.WriteLine("Игра Виселица - угадайте слово из 6 букв");
+
+        while (tries > 0)
+        {
+            Console.WriteLine("\nСлово: " + hidden);
+            Console.WriteLine("Попыток осталось: " + tries);
+            Console.Write("Введите букву: ");
+            char letter = Console.ReadLine()[0];
+
+            if (word.Contains(letter))
+            {
+                Console.WriteLine("Да, есть такая буква!");
+
+                string newHidden = "";
+                for (int i = 0; i < word.Length; i++)
+                {
+                    if (word[i] == letter)
+                        newHidden += letter;
+                    else if (hidden[i] != '_')
+                        newHidden += hidden[i];
+                    else
+                        newHidden += '_';
+                }
+                hidden = newHidden;
+            }
+            else
+            {
+                Console.WriteLine("Нет такой буквы!");
+                tries--;
+            }
+
+            if (hidden == word)
+            {
+                Console.WriteLine("\nУра! Вы выиграли! Слово: " + word);
+                break;
+            }
+        }
+
+        if (tries == 0)
+            Console.WriteLine("\nИгра окончена! Слово было: " + word);
+    }
+}
