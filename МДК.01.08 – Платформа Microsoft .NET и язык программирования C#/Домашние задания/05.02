@@ -1,0 +1,120 @@
+using System;
+using System.Linq;
+
+namespace lesson_7_8_functions
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            string[] users = new string[20];
+
+            while (true)
+            {
+                Console.WriteLine("1. добавить пользователя \n" +
+                                  "2. удалить пользователя \n" +
+                                  "3. изменить пользователя \n" +
+                                  "4. показать пользователей");
+
+                Console.Write("напишите номер действия: ");
+                int action = Convert.ToInt32(Console.ReadLine());
+
+                switch (action)
+                {
+                    case 1:
+                        users = AddUser(users);
+                        break;
+                    case 2:
+                        users = RemoveUser(users);
+                        break;
+                    case 3:
+                        users = ChangeUser(users);
+                        break;
+                    case 4:
+                        ShowUsers(users);
+                        break;
+                    default:
+                        Console.WriteLine("не верная команда!");
+                        break;
+                }
+            }
+        }
+
+        static void ShowUsers(string[] users)
+        {
+            Console.WriteLine("Отображение пользователей");
+            int count = 0;
+            foreach (string user in users)
+            {
+                count++;
+                if (!string.IsNullOrEmpty(user))
+                {
+                    Console.WriteLine($"  {count}. {user}");
+                }
+            }
+        }
+
+        static string[] AddUser(string[] users)
+        {
+            Console.WriteLine("Добавление пользователя");
+            Console.Write("Введите имя нового пользователя: ");
+            string newUser = Console.ReadLine();
+
+            for (int i = 0; i < users.Length; i++)
+            {
+                if (string.IsNullOrEmpty(users[i]))
+                {
+                    users[i] = newUser;
+                    break;
+                }
+            }
+
+            Console.WriteLine("пользователь добавлен");
+            return users;
+        }
+
+        static string[] RemoveUser(string[] users)
+        {
+            Console.WriteLine("Удаление пользователя");
+            ShowUsers(users);
+
+            Console.Write("Введите номер удаляемого пользователя: ");
+            int index = Convert.ToInt32(Console.ReadLine()) - 1;
+
+            if (index >= 0 && index < users.Length && !string.IsNullOrEmpty(users[index]))
+            {
+                users[index] = string.Empty;
+                Console.WriteLine("пользователь удален");
+            }
+            else
+            {
+                Console.WriteLine("неверный номер");
+            }
+
+            return users;
+        }
+
+        static string[] ChangeUser(string[] users)
+        {
+            Console.WriteLine("Изменение пользователя");
+            ShowUsers(users);
+
+            Console.Write("Введите номер пользователя для изменения: ");
+            int index = Convert.ToInt32(Console.ReadLine()) - 1;
+
+            if (index >= 0 && index < users.Length && !string.IsNullOrEmpty(users[index]))
+            {
+                Console.Write("Введите новое имя: ");
+                string newName = Console.ReadLine();
+                users[index] = newName;
+                Console.WriteLine("пользователь изменен");
+            }
+            else
+            {
+                Console.WriteLine("неверный номер");
+            }
+
+            return users;
+        }
+    }
+}
