@@ -1,0 +1,119 @@
+from typing import List, Optional
+from dataclasses import dataclass
+from enum import Enum
+
+
+class Category(Enum):
+    SOUP = "Супы"
+    MAIN = "Основные блюда"
+    SALAD = "Салаты"
+    DESSERT = "Десерты"
+    BEVERAGE = "Напитки"
+
+
+@dataclass
+class Recipe:
+    id: int
+    name: str
+    category: Category
+    ingredients: List[str]
+    instructions: str
+
+    def __str__(self) -> str:
+        return f"{self.id}. {self.name} ({self.category.value})"
+
+
+class RecipeRepository:
+
+    def __init__(self):
+        self._recipes: List[Recipe] = []
+        self._next_id = 1
+
+    def get_all(self) -> List[Recipe]:
+
+        return self._recipes.copy()
+
+    def get_by_category(self, category: Category) -> List[Recipe]:
+
+        return [recipe for recipe in self._recipes if recipe.category == category]
+
+    def add(self, recipe: Recipe) -> Recipe:
+        new_recipe = Recipe(
+            id=self._next_id,
+            name=recipe.name,
+            category=recipe.category,
+            ingredients=recipe.ingredients,
+            instructions=recipe.instructions
+        )
+
+        self._recipes.append(new_recipe)
+        self._next_id += 1
+
+        return new_recipe
+
+    def delete(self, recipe_id: int) -> bool:
+
+        for i, recipe in enumerate(self._recipes):
+            if recipe.id == recipe_id:
+                del self._recipes[i]
+                return True
+        return False
+
+    def get_by_id(self, recipe_id: int) -> Optional[Recipe]:
+        for recipe in self._recipes:
+            if recipe.id == recipe_id:
+                return recipe
+        return None
+
+
+def main():
+    repo = RecipeRepository()
+
+    print("Добавить рецепт" )
+
+    borsch = Recipe(
+        id=0,
+        name="Борщ",
+        category=Category.SOUP,
+        ingredients=["свекла", "капуста", "картофель", "мясо"],
+        instructions="Сварить бульон, добавить овощи, варить до готовности"
+    )
+    repo.add(borsch)
+    print(f"Добавлен: {borsch}")
+
+    olivier = Recipe(
+        id=0,
+        name="Оливье",
+        category=Category.SALAD,
+        ingredients=["картофель", "морковь", "горошек", "майонез"],
+        instructions="Нарезать ингредиенты, смешать, заправить майонезом"
+    )
+    repo.add(olivier)
+    print(f"Добавлен: {olivier}")
+
+    print("\nВсе рецепты ")
+    all_recipes = repo.get_all()
+    for recipe in all_recipes:
+        print(recipe)
+        print(f"  Ингредиенты: {', '.join(recipe.ingredients)}")
+
+
+    print("\n Супы ")
+    soups = repo.get_by_category(Category.SOUP)
+    for soup in soups:
+        print(soup)
+
+    print("\n Удалить рецепт ")
+    if repo.delete(1):
+        print("Рецепт с id=1 успешно удален")
+    else:
+        print("Рецепт не найден")
+
+    print("\n Оставшиеся рецепты ")
+    remaining = repo.get_all()
+    for recipe in remaining:
+        print(recipe)
+
+
+if __name__ == "__main__":
+    main()
