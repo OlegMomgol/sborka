@@ -1,0 +1,306 @@
+import sys
+import os
+
+sys.path.append(os.path.abspath(
+    'C:\\RPO-git\\RPO_base\\МДК.01.01 Разработка программных модулей\\Проекты\\Меню рецептов\\recipe_db'))
+
+from service.category_service import CategoryService
+from service.recipe_service import RecipeService
+# Подключаем виджеты
+from ui.control_panel_widget import ControlPanelWidget
+from ui.header_widget import HeaderWidget
+from ui.recipe_list_widget import RecipeListWidget
+
+from PyQt6.QtWidgets import (
+    QApplication, QWidget, QLabel, QListWidget, QLineEdit,
+    QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QMessageBox, QDialog,
+    QDialogButtonBox
+)
+
+
+class AddEditRecipeDialog(QDialog):
+    def __init__(self, parent=None, recipe_data=None):
+        super().__init__(parent)
+        self.recipe_data = recipe_data
+        self.is_edit = recipe_data is not None
+        self.setWindowTitle('Редактирование рецепта' if self.is_edit else 'Добавление рецепта')
+        self.resize(400, 300)
+        self.setup_ui()
+        self.load_categories()
+        if self.is_edit:
+            self.load_recipe_data()
+
+    def setup_ui(self):
+        layout = QVBoxLayout()
+
+        name_layout = QHBoxLayout()
+        name_layout.addWidget(QLabel('Название: '))
+        self.name_input = QLineEdit()
+        name_layout.addWidget(self.name_input)
+        layout.addLayout(name_layout)
+
+        desc_layout = QHBoxLayout()
+        desc_layout.addWidget(QLabel('Описание: '))
+        self.desc_input = QLineEdit()
+        desc_layout.addWidget(self.desc_input)
+        layout.addLayout(desc_layout)
+
+        level_layout = QHBoxLayout()
+        level_layout.addWidget(QLabel('Сложность: '))
+        self.level_combo = QComboBox()
+        self.level_combo.addItems(['easy', 'medium', 'hard', 'unreal'])
+        level_layout.addWidget(self.level_combo)
+        layout.addLayout(level_layout)
+
+        cat_layout = QHBoxLayout()
+        cat_layout.addWidget(QLabel('Категория: '))
+        self.category_combo = QComboBox()
+        cat_layout.addWidget(self.category_combo)
+        layout.addLayout(cat_layout)
+
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+        self.setLayout(layout)
+
+    def load_categories(self):
+        categories = CategoryService.get_all()
+        self.category_combo.addItem('Без категории', None)
+        for cat in categories:
+            self.category_combo.addItem(cat[1], cat[0])
+
+    def load_recipe_data(self):
+        if self.recipe_data:
+            self.name_input.setText(self.recipe_data.get('name', ''))
+            self.desc_input.setText(self.recipe_data.get('description', ''))
+
+            level = self.recipe_data.get('level', 'medium')
+            index = self.level_combo.findText(level)
+            if index >= 0:
+                self.level_combo.setCurrentIndex(index)
+
+            category_id = self.recipe_data.get('category_id')
+            if category_id:
+                for i in range(self.category_combo.count()):
+                    if self.category_combo.itemData(i) == category_id:
+                        self.category_combo.setCurrentIndex(i)
+                        break
+
+    def get_recipe_data(self):
+        category_id = self.category_combo.currentData()
+        return {
+            'id': self.recipe_data.get('id') if self.recipe_data else None,
+            'name': self.name_input.text().strip(),
+            'description': self.desc_input.text().strip() or None,
+            'level': self.level_combo.currentText(),
+            'category_id': category_id if category_id else None
+        }
+
+
+class MainWindow(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.current_filter_level = None  
+        self.setWindowTitle('Кулинарное меню')
+        self.resize(500, 450)
+        self.setup_ui()
+        self.load_recipes()
+
+    def setup_ui(self):
+        main_layout = QVBoxLayout()
+        self.header = HeaderWidget('Меню виджетов')
+        self.recipe_list = RecipeListWidget()
+        self.controls = ControlPanelWidget()
+
+        self.recipe_list.recipe_selected.connect(self.on_recipe_selected)
+        self.controls.add_clicked.connect(self.on_add_recipe)
+
+        filter_layout = QHBoxLayout()
+        filter_layout.addWidget(QLabel('Фильтр по сложности:'))
+        self.filter_combo = QComboBox()
+        self.filter_combo.addItem('Все', None)
+        self.filter_combo.addItems(['easy', 'medium', 'hard', 'unreal'])
+        self.filter_combo.currentIndexChanged.connect(self.on_filter_changed)
+        filter_layout.addWidget(self.filter_combo)
+        filter_layout.addStretch()
+
+        self.reset_filter_btn = QPushButton('Сбросить фильтр')
+        self.reset_filter_btn.clicked.connect(self.reset_filter)
+        filter_layout.addWidget(self.reset_filter_btn)
+
+        main_layout.addWidget(self.header)
+        main_layout.addLayout(filter_layout)
+        main_layout.addWidget(self.recipe_list)
+        main_layout.addWidget(self.controls)
+
+        self.setLayout(main_layout)
+
+    def load_recipes(self, filter_level=None):
+        self.recipe_list.clear_recipe()  
+
+        if filter_level:
+            recipes = RecipeService.get_by_level(filter_level)
+        else:
+            recipes = RecipeService.get_all() 
+
+        if not recipes and not filter_level:
+            self.add_sample_data()
+            recipes = RecipeService.get_all()
+
+        for recipe in recipes:
+            # recipe: (id, name, description, level, category_name, category_id)
+            category_name = recipe[4] if recipe[4] else 'Без категории'
+            self.recipe_list.add_recipe(recipe[1], category_name, recipe[3])
+
+    def add_sample_data(self):
+        cat_id_1 = CategoryService.add('Супы')
+        cat_id_2 = CategoryService.add('Сладости')
+        cat_id_3 = CategoryService.add('Мясное')
+
+        RecipeService.add_recipe('Борщ', cat_id_1, 'medium', 'Украинский борщ')
+        RecipeService.add_recipe('Торт "Наполеон"', cat_id_2, 'hard', 'Торт с заварным кремом')
+        RecipeService.add_recipe('Индейка', cat_id_3, 'easy', 'Запеченная индейка с овощами')
+        RecipeService.add_recipe('Оливье', cat_id_3, 'medium', 'Салат с колбасой')
+        RecipeService.add_recipe('Панна котта', cat_id_2, 'easy', 'Итальянский десерт')
+
+    def get_current_recipes_data(self):
+        recipes = []
+        for i in range(self.recipe_list.recipe_list.count()):
+            item = self.recipe_list.recipe_list.item(i)
+            if item:
+                text = item.text()
+                name = text.split(' (')[0]
+                recipes.append({'name': name, 'item': item})
+        return recipes
+
+    def find_recipe_item(self, recipe_name):
+        for i in range(self.recipe_list.recipe_list.count()):
+            item = self.recipe_list.recipe_list.item(i)
+            if item and item.text().startswith(recipe_name):
+                return item
+        return None
+
+    def on_recipe_selected(self, name):
+        recipes = RecipeService.get_all()
+        selected_recipe = None
+        for recipe in recipes:
+            if recipe[1] == name:
+                selected_recipe = recipe
+                break
+
+        if selected_recipe:
+            self.show_recipe_context_menu(selected_recipe)
+
+    def show_recipe_context_menu(self, recipe):
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle('Действия с рецептом')
+        msg_box.setText(f'Рецепт: {recipe[1]}\nЧто хотите сделать?')
+
+        edit_btn = msg_box.addButton('Редактировать', QMessageBox.ButtonRole.ActionRole)
+        delete_btn = msg_box.addButton('Удалить', QMessageBox.ButtonRole.ActionRole)
+        cancel_btn = msg_box.addButton('Отмена', QMessageBox.ButtonRole.RejectRole)
+
+        msg_box.exec()
+
+        if msg_box.clickedButton() == edit_btn:
+            self.on_edit_recipe(recipe)
+        elif msg_box.clickedButton() == delete_btn:
+            self.on_delete_recipe(recipe)
+
+    def on_edit_recipe(self, recipe):
+        recipe_data = {
+            'id': recipe[0],
+            'name': recipe[1],
+            'description': recipe[2],
+            'level': recipe[3],
+            'category_id': recipe[5] if len(recipe) > 5 else None
+        }
+
+        dialog = AddEditRecipeDialog(self, recipe_data)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            data = dialog.get_recipe_data()
+            if not data['name']:
+                QMessageBox.warning(self, 'Ошибка', 'Введите название рецепта')
+                return
+
+            success = RecipeService.update_recipe(
+                recipe_id=data['id'],
+                name=data['name'],
+                category_id=data['category_id'],
+                level=data['level'],
+                description=data['description']
+            )
+
+            if success:
+                self.load_recipes(self.current_filter_level)
+                QMessageBox.information(self, 'Успех', 'Рецепт обновлен')
+            else:
+                QMessageBox.critical(self, 'Ошибка', 'Не удалось обновить рецепт')
+
+    def on_delete_recipe(self, recipe):
+
+        reply = QMessageBox.question(
+            self,
+            'Подтверждение удаления',
+            f'Вы уверены, что хотите удалить рецепт "{recipe[1]}"?',
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+
+        if reply == QMessageBox.StandardButton.Yes:
+            success = RecipeService.delete_recipe(recipe[0])
+            if success:
+                item = self.find_recipe_item(recipe[1])
+                if item:
+                    row = self.recipe_list.recipe_list.row(item)
+                    self.recipe_list.recipe_list.takeItem(row)
+                QMessageBox.information(self, 'Успех', 'Рецепт удален')
+            else:
+                QMessageBox.critical(self, 'Ошибка', 'Не удалось удалить рецепт')
+
+    def on_filter_changed(self, index):
+        self.current_filter_level = self.filter_combo.currentData()
+        self.load_recipes(self.current_filter_level)
+
+    def reset_filter(self):
+        self.filter_combo.setCurrentIndex(0)
+        self.current_filter_level = None
+        self.load_recipes()
+
+    def on_add_recipe(self):
+        dialog = AddEditRecipeDialog(self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            data = dialog.get_recipe_data()
+            if not data['name']:
+                QMessageBox.warning(self, 'Ошибка', 'Введите название рецепта')
+                return
+
+            recipe_id = RecipeService.add_recipe(
+                name=data['name'],
+                category_id=data['category_id'],
+                level=data['level'],
+                description=data['description']
+            )
+
+            if recipe_id and recipe_id[0] > 0:
+                if self.current_filter_level is None or self.current_filter_level == data['level']:
+                    category_name = 'Без категории'
+                    if data['category_id']:
+                        cat = CategoryService.get_by_id(data['category_id'])
+                        category_name = cat[0][1] if cat and len(cat) > 0 else 'Без категории'
+
+                    self.recipe_list.add_recipe(data['name'], category_name, data['level'])
+
+                QMessageBox.information(self, 'Успех', 'Рецепт добавлен')
+            else:
+                QMessageBox.critical(self, 'Ошибка', 'Не удалось добавить рецепт')
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
