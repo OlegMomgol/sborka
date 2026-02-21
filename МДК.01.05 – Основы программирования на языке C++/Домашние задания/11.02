@@ -1,0 +1,146 @@
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+enum ItemType {
+    armor,
+    weapon,
+    potion,
+    other
+};
+
+enum Rarity {
+    usually,
+    rare,
+    epic,
+    legendary
+};
+
+string typeToString(ItemType type) {
+    switch (type) {
+    case armor: return "Броня";
+    case weapon: return "Оружие";
+    case potion: return "Зелье";
+    case other: return "Другое";
+    }
+    return "Такого типа не существует";
+};
+
+string rarityToString(Rarity rarity) {
+    switch (rarity) {
+    case usually: return "Обычный";
+    case rare: return "Редкий";
+    case epic: return "Эпический";
+    case legendary: return "Легендарный";
+    }
+    return "Такой редкости не существует";
+};
+
+struct Item {
+    int id;
+    string name;
+    ItemType type;
+    Rarity rarity;
+    int value;
+    double weight;
+};
+
+double getTotalWeight(const vector<Item>& inventory) {
+    double total = 0;
+    for (const auto& item : inventory) {
+        total += item.weight;
+    }
+    return total;
+};
+
+void listItems(const vector<Item>& inventory, double maxWeigth) {
+    for (const auto& item : inventory) {
+        cout << item.id << " | " << item.name << " | "
+            << typeToString(item.type) << " | " << rarityToString(item.rarity) << " | " << item.value << " | " << item.weight << endl;
+    }
+}
+
+bool addItem(vector<Item>& inventory, const Item& item, const double& maxWeight) {
+    if (getTotalWeight(inventory) + item.weight > maxWeight) {
+        cout << "Инвентарь переполнен" << endl;
+        return false;
+    }
+    inventory.push_back(item);
+    cout << "Предмет успешно добавлен" << endl;
+    return true;
+};
+
+void findItemById(const vector<Item>& inventory, int searchId) {
+    bool found = false;
+
+    for (int i = 0; i < inventory.size(); i++) {
+        if (inventory[i].id == searchId) {
+            cout << "Найден предмет: " << endl;
+            cout << "ID: " << inventory[i].id << endl;
+            cout << "Название: " << inventory[i].name << endl;
+            cout << "Тип: " << typeToString(inventory[i].type) << endl;
+            cout << "Редкость: " << rarityToString(inventory[i].rarity) << endl;
+            cout << "Цена: " << inventory[i].value << endl;
+            cout << "Вес: " << inventory[i].weight << endl;
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        cout << "Предмет с ID " << searchId << " не найден" << endl;
+    }
+}
+
+
+void removeItemById(vector<Item>& inventory, int removeId) {
+    bool found = false;
+
+    for (int i = 0; i < inventory.size(); i++) {
+        if (inventory[i].id == removeId) {
+            cout << "Предмет \"" << inventory[i].name << "\" удален" << endl;
+            inventory.erase(inventory.begin() + i);
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        cout << "Предмет с ID " << removeId << " не найден" << endl;
+    }
+}
+
+int main() {
+    cout << endl;
+    vector<Item> inventory;
+    double maxWeight = 100.0;
+
+    Item sword = { 1, "Стальной меч", weapon, usually, 50, 5.0 };
+    Item dragonArmor = { 2, "Драконья броня", armor, epic, 2500, 52.0 };
+    Item healthPotion = { 3, "Лечебное зелье", potion, rare, 200, 1.0 };
+
+    addItem(inventory, sword, maxWeight);
+    addItem(inventory, dragonArmor, maxWeight);
+    addItem(inventory, healthPotion, maxWeight);
+
+    cout << "\nНачальный инвентарь:" << endl;
+    listItems(inventory, maxWeight);
+
+    cout << "\n Тест поиска " << endl;
+    findItemById(inventory, 2); 
+
+    cout << "\nТест поиска несуществующего предмета " << endl;
+    findItemById(inventory, 5); 
+
+    cout << "\n Тест удаления " << endl;
+    removeItemById(inventory, 1); 
+
+    cout << "\nИнвентарь после удаления:" << endl;
+    listItems(inventory, maxWeight);
+
+    cout << "\nТест удаления несуществующего предмета " << endl;
+    removeItemById(inventory, 10); 
+}
+
