@@ -1,0 +1,169 @@
+import sys
+import sqlite3
+from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
+                             QHBoxLayout, QTableWidget, QTableWidgetItem,
+                             QPushButton, QLineEdit, QTextEdit, QMessageBox,
+                             QLabel, QHeaderView)
+from PyQt6.QtCore import Qt
+
+
+class TaskManager(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+        self.initDB()
+        self.loadTasks()
+
+    def initUI(self):
+        self.setWindowTitle("Менеджер задач")
+        self.setGeometry(100, 100, 800, 500)
+
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+
+        main_layout = QVBoxLayout()
+        central_widget.setLayout(main_layout)
+
+        title = QLabel("Мои задачи")
+        title.setStyleSheet("font-size: 18px; font-weight: bold; margin: 10px;")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(title)
+
+        self.table = QTableWidget()
+        self.table.setColumnCount(3)
+        self.table.setHorizontalHeaderLabels(["ID", "Название", "Описание"])
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        main_layout.addWidget(self.table)
+        
+        form_layout = QVBoxLayout()
+        form_layout.addWidget(QLabel("Добавить новую задачу:"))
+
+        self.title_input = QLineEdit()
+        self.title_input.setPlaceholderText("Название задачи")
+        form_layout.addWidget(self.title_input)
+
+        self.desc_input = QTextEdit()
+        self.desc_input.setPlaceholderText("Описание задачи")
+        self.desc_input.setMaximumHeight(80)
+        form_layout.addWidget(self.desc_input)
+
+        buttons_layout = QHBoxLayout()
+
+        self.add_btn = QPushButton("Добавить задачу")
+        self.add_btn.clicked.connect(self.addTask)
+        buttons_layout.addWidget(self.add_btn)
+
+        self.delete_btn = QPushButton("Удалить выбранную")
+        self.delete_btn.clicked.connect(self.deleteTask)
+        buttons_layout.addWidget(self.delete_btn)
+
+        self.refresh_btn = QPushButton("Обновить")
+        self.refresh_btn.clicked.connect(self.loadTasks)
+        buttons_layout.addWidget(self.refresh_btn)
+
+        form_layout.addLayout(buttons_layout)
+        main_layout.addLayout(form_layout)
+
+    def initDB(self):
+        try:
+            self.conn = sqlite3.connect("tasks.db")
+            self.cursor = self.conn.cursor()
+
+            self.cursor.execute("""
+                CREATE TABLE IF NOT EXISTS tasks (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title TEXT NOT NULL,
+                    description TEXT
+                )
+            """)
+            self.conn.commit()
+        except sqlite3.Error as e:
+            QMessageBox.critical(self, "Ошибка БД", f"Не удалось подключиться к БД: {e}")
+
+    def loadTasks(self):
+        try:
+            self.cursor.execute("SELECT id, title, description FROM tasks ORDER BY id")
+            tasks = self.cursor.fetchall()
+
+            self.table.setRowCount(len(tasks))
+
+            for row, task in enumerate(tasks):
+                for col, value in enumerate(task):
+                    item = QTableWidgetItem(str(value))
+                    self.table.setItem(row, col, item)
+
+            self.table.resizeColumnsToContents()
+
+        except sqlite3.Error as e:
+            QMessageBox.warning(self, "Ошибка", f"Не удалось загрузить задачи: {e}")
+
+    def addTask(self):
+        title = self.title_input.text().strip()
+        description = self.desc_input.toPlainText().strip()
+
+        if not title:
+            QMessageBox.warning(self, "Ошибка", "Название задачи не может быть пустым!")
+            return
+
+        try:
+            self.cursor.execute(
+                "INSERT INTO tasks (title, description) VALUES (?, ?)",
+                (title, description)
+            )
+            self.conn.commit()
+            self.title_input.clear()
+            self.desc_input.clear()
+
+            self.loadTasks()
+
+            QMessageBox.information(self, "Успех", "Задача успешно добавлена!")
+
+        except sqlite3.Error as e:
+            QMessageBox.critical(self, "Ошибка БД", f"Не удалось добавить задачу: {e}")
+
+    def deleteTask(self):
+        selected_row = self.table.currentRow()
+
+        if selected_row < 0:
+            QMessageBox.warning(self, "Ошибка", "Выберите задачу для удаления")
+            return
+
+        task_id = self.table.item(selected_row, 0).text()
+        reply = QMessageBox.question(
+            self,
+            "Подтверждение",
+            f"Вы уверены, что хотите удалить задачу {task_id}?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+
+        if reply == QMessageBox.StandardButton.Yes:
+            try:
+                self.cursor.execute("DELETE FROM tasks WHERE id = ", (task_id,))
+                self.conn.commit()
+                self.loadTasks()
+
+                QMessageBox.information(self, "Успех", "Задача удалена")
+
+            except sqlite3.Error as e:
+                QMessageBox.critical(self, "Ошибка БД", f"Не удалось удалить задачу: {e}")
+
+    def closeEvent(self, event):
+        if hasattr(self, 'conn'):
+            self.conn.close()
+        event.accept()
+
+
+def main():
+    app = QApplication(sys.argv)
+    app.setStyle('Fusion')
+
+    window = TaskManager()
+    window.show()
+
+    sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()
