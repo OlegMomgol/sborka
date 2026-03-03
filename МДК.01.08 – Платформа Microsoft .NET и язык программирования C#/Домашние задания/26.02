@@ -1,0 +1,137 @@
+using System;
+
+class Program
+{
+    static void Main()
+    {
+        Game game = new Game();
+        game.Run();
+    }
+}
+
+class Game
+{
+    private const int Size = 10;
+    private const int MaxTurns = 20;
+
+    private int playerX, playerY;
+    private int monsterX, monsterY;
+    private int turn;
+    private bool gameOver;
+    private Random random = new Random();
+
+    public Game()
+    {
+        playerX = random.Next(Size);
+        playerY = random.Next(Size);
+
+        do
+        {
+            monsterX = random.Next(Size);
+            monsterY = random.Next(Size);
+        } while (monsterX == playerX && monsterY == playerY); 
+
+        turn = 0;
+        gameOver = false;
+    }
+
+    public void Run()
+    {
+        Console.WriteLine("Игра началась! Управление: W - вверх, S - вниз, A - влево, D - вправо");
+
+        while (!gameOver)
+        {
+            DrawMap();
+
+            if (turn >= MaxTurns)
+            {
+                Console.WriteLine("Поздравляем! Вы продержались 20 ходов и победили!");
+                break;
+            }
+
+            PlayerMove();
+
+            if (gameOver) break;
+
+            MonsterMove();
+
+            if (playerX == monsterX && playerY == monsterY)
+            {
+                Console.WriteLine("Монстр поймал вас! Игра окончена.");
+                gameOver = true;
+            }
+
+            turn++;
+        }
+    }
+
+    private void DrawMap()
+    {
+        Console.Clear();
+        Console.WriteLine($"Ход: {turn + 1}");
+
+        for (int y = 0; y < Size; y++)
+        {
+            for (int x = 0; x < Size; x++)
+            {
+                if (x == playerX && y == playerY)
+                    Console.Write("P ");
+                else if (x == monsterX && y == monsterY)
+                    Console.Write("M ");
+                else
+                    Console.Write(". ");
+            }
+            Console.WriteLine();
+        }
+        Console.WriteLine();
+    }
+
+    private void PlayerMove()
+    {
+        ConsoleKey key;
+
+        do
+        {
+            Console.Write("Ваш ход (W/A/S/D): ");
+            key = Console.ReadKey(true).Key;
+        } while (key != ConsoleKey.W && key != ConsoleKey.A && key != ConsoleKey.S && key != ConsoleKey.D);
+
+        int newX = playerX;
+        int newY = playerY;
+
+        switch (key)
+        {
+            case ConsoleKey.W: newY--; break;
+            case ConsoleKey.S: newY++; break;
+            case ConsoleKey.A: newX--; break;
+            case ConsoleKey.D: newX++; break;
+        }
+
+        if (newX >= 0 && newX < Size && newY >= 0 && newY < Size)
+        {
+            playerX = newX;
+            playerY = newY;
+        }
+        else
+        {
+            Console.WriteLine("Нельзя выйти за границы карты!");
+            PlayerMove(); 
+        }
+    }
+
+    private void MonsterMove()
+    {
+        if (monsterX < playerX)
+            monsterX++;
+        else if (monsterX > playerX)
+            monsterX--;
+
+        if (monsterY < playerY)
+            monsterY++;
+        else if (monsterY > playerY)
+            monsterY--;
+
+        monsterX = Math.Clamp(monsterX, 0, Size - 1);
+        monsterY = Math.Clamp(monsterY, 0, Size - 1);
+    }
+}
