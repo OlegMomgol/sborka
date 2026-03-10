@@ -1,0 +1,67 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Car {
+private:
+    string model;
+    int fuelLevel;
+
+public:
+    Car(string carModel, int initialFuel) {
+        model = carModel;
+        fuelLevel = initialFuel;
+    }
+    
+    void drive(int distance) {
+        int fuelNeeded = distance / 10; 
+        
+        if (fuelNeeded <= fuelLevel) {
+            fuelLevel -= fuelNeeded;
+            cout << model << " проехал " << distance << " км. Остаток топлива: " << fuelLevel << endl;
+        } else {
+            cout << model << " не может проехать " << distance << " км. Недостаточно топлива!" << endl;
+        }
+    }
+    
+    void refuel(int amount) {
+        if (amount > 0) {
+            fuelLevel += amount;
+            cout << model << " заправлен на " << amount << " единиц. Текущий уровень: " << fuelLevel << endl;
+        }
+    }
+    
+    int getFuel() {
+        return fuelLevel;
+    }
+    
+    void displayInfo() {
+        cout << "Модель: " << model << ", Уровень топлива: " << fuelLevel << endl;
+    }
+};
+
+int main() {
+    setlocale(LC_ALL, "Ru");
+    Car car1("Toyota Camry", 50);
+    Car car2("Honda Civic", 40);
+    
+    cout << " Начальное состояние " << endl;
+    car1.displayInfo();
+    car2.displayInfo();
+    
+    cout << "\n Работа первого автомобиля " << endl;
+    car1.drive(100);
+    car1.refuel(20);
+    car1.drive(300);
+    
+    cout << "\n Работа второго автомобиля " << endl;
+    car2.drive(150);
+    car2.refuel(15);
+    car2.drive(200);
+    
+    cout << "\n Финальное состояние " << endl;
+    cout << "car1: " << car1.getFuel() << " единиц топлива" << endl;
+    cout << "car2: " << car2.getFuel() << " единиц топлива" << endl;
+    
+    return 0;
+}
