@@ -1,0 +1,189 @@
+import psycopg2
+from psycopg2 import sql, Error
+
+# Параметры подключения к базе данных
+DB_CONFIG = {
+    'host': 'localhost',
+    'database': 'your_database_name',
+    'user': 'your_username',
+    'password': 'your_password',
+    'port': '5432'  # стандартный порт PostgreSQL
+}
+
+def connect_db():
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        conn.autocommit = False  # отключаем автоматическое подтверждение транзакций
+        return conn
+    except Error as e:
+        print(f"Ошибка подключения к базе данных: {e}")
+        return None
+
+def create_table_if_not_exists(conn):
+    create_table_query = """
+    CREATE TABLE IF NOT EXISTS categories (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(create_table_query)
+            conn.commit()
+            print("Таблица 'categories' проверена/создана успешно")
+    except Error as e:
+        print(f"Ошибка при создании таблицы: {e}")
+        conn.rollback()
+
+def show_categories(conn):
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM categories ORDER BY id;")
+            categories = cursor.fetchall()
+            
+            if not categories:
+                print("Таблица пуста")
+                return
+            
+            print("\n" + "="*60)
+            print(f"{'ID':<5} {'Название':<20} {'Описание':<30} Дата создания")
+            print("-"*60)
+            
+            for category in categories:
+                created_at = category[3].strftime("%Y-%m-%d %H:%M") if category[3] else "N/A"
+                print(f"{category[0]:<5} {category[1]:<20} {str(category[2]):<30} {created_at}")
+            print("="*60)
+            
+    except Error as e:
+        print(f"Ошибка при чтении данных: {e}")
+        conn.rollback()
+
+def add_category(conn, name, description=""):
+    try:
+        with conn.cursor() as cursor:
+            insert_query = """
+            INSERT INTO categories (name, description) 
+            VALUES (%s, %s) 
+            RETURNING id;
+            """
+            cursor.execute(insert_query, (name, description))
+            category_id = cursor.fetchone()[0]
+            conn.commit()
+            print(f"Категория '{name}' добавлена с ID: {category_id}")
+            return category_id
+    except Error as e:
+        print(f"Ошибка при добавлении категории: {e}")
+        conn.rollback()
+        return None
+
+def update_category(conn, category_id, new_name=None, new_description=None):
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT id FROM categories WHERE id = %s;", (category_id,))
+            if not cursor.fetchone():
+                print(f"Категория с ID {category_id} не найдена")
+                return False
+            
+            update_fields = []
+            params = []
+            
+            if new_name is not None:
+                update_fields.append("name = %s")
+                params.append(new_name)
+            
+            if new_description is not None:
+                update_fields.append("description = %s")
+                params.append(new_description)
+            
+            if not update_fields:
+                print("Нет данных для обновления")
+                return False
+            
+            params.append(category_id)
+            update_query = sql.SQL("UPDATE categories SET {} WHERE id = %s;").format(
+                sql.SQL(', ').join(map(sql.SQL, update_fields))
+            )
+            
+            cursor.execute(update_query, params)
+            conn.commit()
+            print(f"Категория с ID {category_id}  обновлена")
+            return True
+            
+    except Error as e:
+        print(f"Ошибка при обновлении категории: {e}")
+        conn.rollback()
+        return False
+
+def delete_category(conn, category_id):
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT name FROM categories WHERE id = %s;", (category_id,))
+            result = cursor.fetchone()
+            
+            if not result:
+                print(f"Категория с ID {category_id} не найдена")
+                return False
+            
+            category_name = result[0]
+            
+            cursor.execute("DELETE FROM categories WHERE id = %s;", (category_id,))
+            conn.commit()
+            print(f"Категория '{category_name}' (ID: {category_id}) удалена")
+            return True
+            
+    except Error as e:
+        print(f"Ошибка при удалении категории: {e}")
+        conn.rollback()
+        return False
+
+def main():
+    print("="*60)
+    print("Управление таблицей categories в PostgreSQL")
+    print("="*60)
+
+    conn = connect_db()
+    if not conn:
+        print("Не удалось подключиться к базе данных")
+        return
+    
+    try:
+        create_table_if_not_exists(conn)
+        
+        print("\n Текущие категории ")
+        show_categories(conn)
+        
+        print("\n Добавление новой категории ")
+        new_id = add_category(conn, "Электроника", "Различные электронные устройства и аксессуары")
+
+        print("\n Категории после добавления ")
+        show_categories(conn)
+
+        if new_id:
+            print(f"\n Обновление категории с ID {new_id} ")
+            update_category(conn, new_id, 
+                           new_name="Бытовая электроника", 
+                           new_description="Телевизоры, аудиосистемы и другая бытовая электроника")
+        
+        print("\n Категории после обновления ")
+        show_categories(conn)
+        
+        if new_id:
+            print(f"\n Удаление категории с ID {new_id} ")
+            delete_category(conn, new_id)
+      
+        print("\n Категории после удаления ")
+        show_categories(conn)
+        
+        print("\n Все операции выполнены")
+        
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
+        conn.rollback()
+    finally:
+        conn.close()
+        print("\nСоединение с базой данных закрыто")
+
+if __name__ == "__main__":
+    main()
