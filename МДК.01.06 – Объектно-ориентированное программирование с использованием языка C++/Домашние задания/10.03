@@ -1,0 +1,74 @@
+#include <iostream>
+#include <cstring>
+
+class String {
+private:
+    char* data;
+    size_t length;
+
+public:
+    String() : data(nullptr), length(0) {}
+    String(const char* str) {
+        length = strlen(str);
+        data = new char[length + 1];
+        strcpy(data, str);
+    }
+    
+    String(const String& other) {
+        length = other.length;
+        data = new char[length + 1];
+        strcpy(data, other.data);
+        std::cout << "Копирующий конструктор вызван" << std::endl;
+    }
+
+    String& operator=(const String& other) {
+        std::cout << "Оператор присваивания вызван" << std::endl;
+        
+        if (this != &other) { 
+            delete[] data;
+            
+            length = other.length;
+            data = new char[length + 1];
+            strcpy(data, other.data);
+        }
+        return *this;
+    }
+    
+    ~String() {
+        delete[] data;
+        std::cout << "Деструктор вызван для строки: " << (data ? data : "null") << std::endl;
+    }
+    
+    void print() const {
+        if (data) {
+            std::cout << data << std::endl;
+        } else {
+            std::cout << "Пустая строка" << std::endl;
+        }
+    }
+    
+    size_t getLength() const {
+        return length;
+    }
+};
+
+int main() {
+    std::cout << " Демонстрация класса String " << std::endl;
+    
+    String str1("рам пам пам");
+    std::cout << "str1: ";
+    str1.print();
+    
+    String str2 = str1; 
+    std::cout << "str2 (копия str1): ";
+    str2.print();
+    
+    String str3;
+    str3 = str1; 
+    std::cout << "str3 (после присваивания): ";
+    str3.print();
+
+    str1 = str1;
+    
+    return 0;
+}
