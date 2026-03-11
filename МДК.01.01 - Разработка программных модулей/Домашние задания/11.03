@@ -1,0 +1,167 @@
+// 1
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Student {
+private:
+    string name;
+    int age;
+    double grade;
+    
+public:
+    void setData(string studentName, int studentAge, double studentGrade) {
+        name = studentName;
+        age = studentAge;
+        grade = studentGrade;
+    }
+    
+    void printlnInfo() {
+        cout << "Информация о студенте:" << endl;
+        cout << "Имя: " << name << endl;
+        cout << "Возраст: " << age << endl;
+        cout << "Средний балл: " << grade << endl;
+    }
+    
+    string getName() {
+        return name;
+    }
+    
+    int getAge() {
+        return age;
+    }
+    
+    double getGrade() {
+        return grade;
+    }
+};
+
+// 2
+#include <iostream>
+using namespace std;
+
+class Calculator {
+public:
+    int add(int a, int b) {
+        return a + b;
+    }
+    
+    int sub(int a, int b) {
+        return a - b;
+    }
+
+    int mul(int a, int b) {
+        return a * b;
+    }
+
+    double div(double a, double b) {
+        if (b == 0) {
+            cout << "Ошибка: деление на ноль" << endl;
+            return 0;
+        }
+        return a / b;
+    }
+};
+
+// 1 
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Car {
+private:
+    string brand;
+    int year;
+    int speed;
+    
+public:
+    Car() : brand(""), year(0), speed(0) {}
+    Car(string carBrand, int carYear, int carSpeed) {
+        setData(carBrand, carYear, carSpeed);
+    }
+    
+    void setData(string carBrand, int carYear, int carSpeed) {
+        brand = carBrand;
+        year = carYear;
+        speed = carSpeed;
+    }
+    
+    void printInfo() {
+        cout << "Марка: " << brand << ", Год выпуска: " << year << ", Скорость: " << speed << endl;
+    }
+    
+    void printInfo(string carBrand) {
+        cout << "Марка: " << carBrand << ", Год выпуска: " << year << ", Скорость: " << speed << endl;
+    }
+    
+    void setBrand(string carBrand) {
+        brand = carBrand;
+    }
+    
+    void setYear(int carYear) {
+        year = carYear;
+    }
+    
+    void setSpeed(int carSpeed) {
+        speed = carSpeed;
+    }
+    
+    string getBrand() {
+        return brand;
+    }
+    
+    int getYear() {
+        return year;
+    }
+    
+    int getSpeed() {
+        return speed;
+    }
+};
+
+// 3
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Animal {
+protected: 
+    string name;
+    
+public:
+    Animal() : name("") {}
+
+    Animal(string animalName) {
+        setNome(animalName);
+    }
+    
+    void setNome(string animalName) {
+        name = animalName;
+    }
+    
+    string getNome() {
+        return name;
+    }
+    
+    void printInfo() {
+        cout << "Имя животного: " << name << endl;
+    }
+};
+
+class Dog : public Animal {
+private:
+    string breed;
+    
+public:
+    Dog(string dogName, string dogBreed) : Animal(dogName) {
+        breed = dogBreed;
+    }
+    
+    void printDogInfo() {
+        cout << "Собака: " << name << ", Порода: " << breed << endl;
+    }
+    
+    void changeName(string newName) {
+        name = newName;
+    }
+};
