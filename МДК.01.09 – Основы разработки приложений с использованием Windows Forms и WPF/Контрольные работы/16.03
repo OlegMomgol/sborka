@@ -1,0 +1,331 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class Program
+{
+    static Dictionary<string, int> tasks = new Dictionary<string, int>();
+    static Queue<string> urgentTasks = new Queue<string>();
+    static HashSet<string> tags = new HashSet<string>();
+    static Dictionary<string, HashSet<string>> taskTags = new Dictionary<string, HashSet<string>>();
+
+    static void Main()
+    {
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine(" меню ");
+            Console.WriteLine("1. работа со словарем задач");
+            Console.WriteLine("2. работа с очередью срочных задач");
+            Console.WriteLine("3. работа с уникальными тегами");
+            Console.WriteLine("4. выход");
+            Console.Write("выберите действие: ");
+
+            string choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    WorkWithDictionary();
+                    break;
+                case "2":
+                    WorkWithQueue();
+                    break;
+                case "3":
+                    WorkWithHashSet();
+                    break;
+                case "4":
+                    return;
+                default:
+                    Console.WriteLine("неверный выбор");
+                    Console.ReadKey();
+                    break;
+            }
+        }
+    }
+
+    // часть 1
+    static void WorkWithDictionary()
+    {
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine(" словарь задач");
+            Console.WriteLine("1. добавить задачу с приоритетом");
+            Console.WriteLine("2. показать задачи с приоритетом выше указанного");
+            Console.WriteLine("3. найти задачу с максимальным приоритетом");
+            Console.WriteLine("4. вывести все задачи");
+            Console.WriteLine("5. назад в главное меню");
+            Console.Write("выберите действие: ");
+
+            string choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    AddTask();
+                    break;
+                case "2":
+                    ShowTasksAbovePriority();
+                    break;
+                case "3":
+                    FindMaxPriorityTask();
+                    break;
+                case "4":
+                    ShowAllTasks();
+                    break;
+                case "5":
+                    return;
+                default:
+                    Console.WriteLine("неверный выбор");
+                    Console.ReadKey();
+                    break;
+            }
+        }
+    }
+
+    static void AddTask()
+    {
+        Console.Write("введите название задачи: ");
+        string taskName = Console.ReadLine();
+
+        if (tasks.ContainsKey(taskName))
+        {
+            Console.WriteLine("задача с таким названием уже существует!");
+        }
+        else
+        {
+            Console.Write("введите приоритет (1 - низкий, 2 - средний, 3 - высокий): ");
+            if (int.TryParse(Console.ReadLine(), out int priority) && priority >= 1 && priority <= 3)
+            {
+                tasks.Add(taskName, priority);
+                if (!taskTags.ContainsKey(taskName))
+                {
+                    taskTags[taskName] = new HashSet<string>();
+                }
+                Console.WriteLine("задача успешно добавлена");
+            }
+            else
+            {
+                Console.WriteLine("неверный приоритет");
+            }
+        }
+        Console.ReadKey();
+    }
+
+    static void ShowTasksAbovePriority()
+    {
+        Console.Write("введите минимальный приоритет для отображения (1-3): ");
+        if (int.TryParse(Console.ReadLine(), out int minPriority))
+        {
+            var filteredTasks = tasks.Where(t => t.Value > minPriority);
+
+            if (filteredTasks.Any())
+            {
+                Console.WriteLine($"\nзадачи с приоритетом выше {minPriority}:");
+                foreach (var task in filteredTasks)
+                {
+                    Console.WriteLine($"- {task.Key} (Приоритет: {task.Value})");
+                }
+            }
+            else
+            {
+                Console.WriteLine("задачи с таким приоритетом не найдены.");
+            }
+        }
+        Console.ReadKey();
+    }
+
+    static void FindMaxPriorityTask()
+    {
+        if (tasks.Any())
+        {
+            var maxPriority = tasks.Values.Max();
+            var maxPriorityTasks = tasks.Where(t => t.Value == maxPriority);
+
+            Console.WriteLine($"\nзадача(и) с максимальным приоритетом ({maxPriority}):");
+            foreach (var task in maxPriorityTasks)
+            {
+                Console.WriteLine($"- {task.Key}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("список задач пуст.");
+        }
+        Console.ReadKey();
+    }
+
+    static void ShowAllTasks()
+    {
+        if (tasks.Any())
+        {
+            Console.WriteLine("\nвсе задачи:");
+            foreach (var task in tasks)
+            {
+                string priority = task.Value == 1 ? "низкий" : task.Value == 2 ? "средний" : "высокий";
+                Console.WriteLine($"- {task.Key} (Приоритет: {priority})");
+            }
+        }
+        else
+        {
+            Console.WriteLine("список задач пуст.");
+        }
+        Console.ReadKey();
+    }
+
+    // Часть 2
+    static void WorkWithQueue()
+    {
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("очередь срочных задач");
+            Console.WriteLine("1. добавить срочную задачу в очередь");
+            Console.WriteLine("2. взять следующую срочную задачу");
+            Console.WriteLine("3. показать все ожидающие срочные задачи");
+            Console.WriteLine("4. назад в главное меню");
+            Console.Write("выберите действие: ");
+
+            string choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    AddUrgentTask();
+                    break;
+                case "2":
+                    TakeNextUrgentTask();
+                    break;
+                case "3":
+                    ShowUrgentTasks();
+                    break;
+                case "4":
+                    return;
+                default:
+                    Console.WriteLine("неверный выбор");
+                    Console.ReadKey();
+                    break;
+            }
+        }
+    }
+
+    static void AddUrgentTask()
+    {
+        Console.Write("введите название срочной задачи: ");
+        string taskName = Console.ReadLine();
+        urgentTasks.Enqueue(taskName);
+        Console.WriteLine("срочная задача добавлена в очередь");
+        Console.ReadKey();
+    }
+
+    static void TakeNextUrgentTask()
+    {
+        if (urgentTasks.Any())
+        {
+            string task = urgentTasks.Dequeue();
+            Console.WriteLine($"задача '{task}' взята для выполнения");
+        }
+        else
+        {
+            Console.WriteLine("очередь срочных задач пуста.");
+        }
+        Console.ReadKey();
+    }
+
+    static void ShowUrgentTasks()
+    {
+        if (urgentTasks.Any())
+        {
+            Console.WriteLine("\nожидающие срочные задачи:");
+            int position = 1;
+            foreach (var task in urgentTasks)
+            {
+                Console.WriteLine($"{position++}. {task}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("очередь срочных задач пуста.");
+        }
+        Console.ReadKey();
+    }
+
+    // Часть 3
+    static void WorkWithHashSet()
+    {
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine(" уникальные теги");
+            Console.WriteLine("1. добавить новый тег");
+            Console.WriteLine("2. показать все существующие теги");
+            Console.WriteLine("3. проверить существование тега");
+            Console.WriteLine("4. назад в главное меню");
+            Console.Write("выберите действие: ");
+
+            string choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    AddTag();
+                    break;
+                case "2":
+                    ShowAllTags();
+                    break;
+                case "3":
+                    CheckTag();
+                    break;
+                case "4":
+                    return;
+                default:
+                    Console.WriteLine("неверный выбор");
+                    Console.ReadKey();
+                    break;
+            }
+        }
+    }
+
+    static void AddTag()
+    {
+        Console.Write("введите название тега: ");
+        string tag = Console.ReadLine();
+
+        if (tags.Add(tag))
+        {
+            Console.WriteLine("тег успешно добавлен");
+        }
+        else
+        {
+            Console.WriteLine("такой тег уже существует");
+        }
+        Console.ReadKey();
+    }
+
+    static void ShowAllTags()
+    {
+        if (tags.Any())
+        {
+            Console.WriteLine("\nвсе существующие теги:");
+            foreach (var tag in tags)
+            {
+                Console.WriteLine($"- {tag}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("список тегов пуст.");
+        }
+        Console.ReadKey();
+    }
+
+    static void CheckTag()
+    {
+        Console.Write("введите тег для проверки: ");
+        string tag = Console.ReadLine();
+
+        Console.WriteLine(tags.Contains(tag) ? "Такой тег существует" : "Тег не найден.");
+        Console.ReadKey();
+    }
+}
