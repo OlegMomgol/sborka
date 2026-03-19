@@ -1,0 +1,299 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Color Text App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+      ),
+      home: const FirstScreen(),
+    );
+  }
+}
+
+class AppState {
+  String inputText;
+
+  AppState({this.inputText = 'Валера молодец'});
+}
+
+class FirstScreen extends StatefulWidget {
+  const FirstScreen({super.key});
+
+  @override
+  State<FirstScreen> createState() => _FirstScreenState();
+}
+
+class _FirstScreenState extends State<FirstScreen> {
+  final TextEditingController _controller = TextEditingController();
+  String _currentText = 'Валера молодец';
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.text = _currentText;
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Экран 1'),
+        backgroundColor: const Color.fromARGB(255, 96, 33, 243),
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Экран 1: Ввод строки',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 40),
+            const Text(
+              'Текст для передачи',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _controller,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'Введите текст',
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _currentText = value;
+                });
+              },
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Текущий текст: $_currentText',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color.fromARGB(255, 115, 173, 219),
+              ),
+            ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SecondScreen(
+                        appState: AppState(inputText: _currentText),
+                      ),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 255, 251, 0),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  'Перейти на Экран 2',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+            ),
+            const Spacer(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SecondScreen extends StatefulWidget {
+  final AppState appState;
+
+  const SecondScreen({super.key, required this.appState});
+
+  @override
+  State<SecondScreen> createState() => _SecondScreenState();
+}
+
+class _SecondScreenState extends State<SecondScreen> {
+  late Color _backgroundColor;
+  late Color _textColor;
+  bool _showHint = true;
+
+  final List<ColorOption> _colors = [
+    ColorOption(name: 'Красный', color: Colors.red),
+    ColorOption(name: 'Синий', color: Colors.blue),
+    ColorOption(name: 'Зеленый', color: Colors.green),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    _setRandomColor();
+  }
+
+  void _setRandomColor() {
+    final randomIndex = DateTime.now().millisecondsSinceEpoch % _colors.length;
+    _backgroundColor = _colors[randomIndex].color;
+    _textColor = _backgroundColor;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Экран 2'),
+        backgroundColor: const Color.fromARGB(255, 5, 53, 92),
+        foregroundColor: Colors.white,
+        centerTitle: true,
+      ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: _backgroundColor,
+        child: SafeArea(
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              const Text(
+                'Экран 2: Выбор цвета',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 40),
+              const Text(
+                'Переданный текст:',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white70,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  widget.appState.inputText,
+                  style: TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                    color: _textColor,
+                  ),
+                ),
+              ),
+              if (_showHint) ...[
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    ' Текст не виден, потому что цвет совпадает с фоном',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
+              const Spacer(),
+              const Text(
+                'Выберите другой цвет для фона:',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 20),
+              ..._colors.map((colorOption) {
+                final bool isActive = _backgroundColor == colorOption.color;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: isActive
+                          ? null
+                          : () {
+                              setState(() {
+                                _backgroundColor = colorOption.color;
+                                _showHint = false;
+                              });
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorOption.color,
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor:
+                            colorOption.color.withOpacity(0.5),
+                        disabledForegroundColor: Colors.white70,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: isActive
+                              ? const BorderSide(color: Colors.white, width: 3)
+                              : BorderSide.none,
+                        ),
+                      ),
+                      child: Text(
+                        colorOption.name,
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+              const SizedBox(height: 30),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ColorOption {
+  final String name;
+  final Color color;
+
+  ColorOption({required this.name, required this.color});
+}
