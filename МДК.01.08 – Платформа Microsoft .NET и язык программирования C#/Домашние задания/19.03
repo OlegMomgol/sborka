@@ -1,0 +1,97 @@
+using System;
+namespace UniversitySystem
+{
+    struct Book
+    {
+
+        public string Title { get; set; }
+        public string Author { get; set; }
+
+        public Book(string title, string author)
+        {
+            Title = title;
+            Author = author;
+        }
+
+        public override string ToString()
+        {
+            return $"\"{Title}\" автора {Author}";
+        }
+    }
+
+    class Student
+    {
+
+        private static int _totalStudents = 0;
+
+        public static int TotalStudents
+        {
+            get { return _totalStudents; }
+        }
+
+        public string Name { get; set; }
+        public Book FavoriteBook { get; set; }
+
+        public Student(string name, Book favoriteBook)
+        {
+            Name = name;
+            FavoriteBook = favoriteBook;
+            _totalStudents++; // Увеличиваем общий счетчик
+        }
+
+        public Student(string name)
+        {
+            Name = name;
+            FavoriteBook = new Book("Не указана", "Не указан");
+            _totalStudents++;
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine(" Система учета студентов\n");
+
+            // 1
+            Console.WriteLine($"Начальное количество студентов в системе: {Student.TotalStudents}\n");
+
+            // 2
+            Book book1 = new Book("Хоббит", "Дж. Р. Р. Толкин");
+            Student student1 = new Student("Иван", book1);
+            Console.WriteLine($"Создан студент {student1.Name}.");
+            Console.WriteLine($"Текущее количество студентов в системе: {Student.TotalStudents}\n");
+
+            // 3
+            Book book2 = new Book("Преступление и наказание", "Ф. М. Достоевский");
+            Student student2 = new Student("Анна", book2);
+            Console.WriteLine($"Создан студент {student2.Name}.");
+            Console.WriteLine($"Текущее количество студентов в системе: {Student.TotalStudents}\n");
+
+            // 4
+            Console.WriteLine(" Эксперимент с копированием \n");
+
+            Console.WriteLine($"Оригинальный студент: {student1.Name}, его любимая книга: {student1.FavoriteBook}.\n");
+
+            Student copiedStudent = student1;
+
+            Book copiedBook = student1.FavoriteBook;
+
+            Console.WriteLine("Копируем данные и вносим изменения");
+            
+            copiedStudent.Name = "Петр";  
+            copiedBook.Title = "Властелин Колец"; 
+            
+            Console.WriteLine("Изменяем имя у копии студента на 'Петр'.");
+            Console.WriteLine("Изменяем название у копии книги на 'Властелин Колец'.\n");
+            
+            Console.WriteLine($"Результат после изменений:");
+            Console.WriteLine($"Имя оригинального студента (student1): {student1.Name}");
+            Console.WriteLine($"Название любимой книги оригинального студента (student1.FavoriteBook): {student1.FavoriteBook.Title}\n");
+            
+            Console.WriteLine("Вывод: Имя студента изменилось, так как классы (ссылочные типы) копируются по ссылке.");
+            Console.WriteLine("Вывод: Книга не изменилась, так как структуры (типы-значения) копируются по значению.");
+            Console.ReadKey();
+        }
+    }
+}
