@@ -1,0 +1,43 @@
+using System;
+
+namespace GeometryFigures
+{
+    class Rectangle
+    {
+        public double width;
+        public double height;
+        public double GetArea()
+        {
+            return width * height;
+        }
+
+        public double GetPerimeter()
+        {
+            return 2 * (width + height);
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Rectangle rect1 = new Rectangle();
+            rect1.width = 10;
+            rect1.height = 5;
+
+            Rectangle rect2 = new Rectangle();
+            rect2.width = 7.5;
+            rect2.height = 3.2;
+
+            double area1 = rect1.GetArea();
+            double perimeter1 = rect1.GetPerimeter();
+
+            double area2 = rect2.GetArea();
+            double perimeter2 = rect2.GetPerimeter();
+
+            Console.WriteLine($"Прямоугольник 1: - Ширина: {rect1.width} - Высота: {rect1.height} - Площадь: {area1} - Периметр: {perimeter1}");
+            Console.WriteLine($"Прямоугольник 2: - Ширина: {rect2.width} - Высота: {rect2.height} - Площадь: {area2} - Периметр: {perimeter2}");
+            Console.ReadKey();
+        }
+    }
+}
