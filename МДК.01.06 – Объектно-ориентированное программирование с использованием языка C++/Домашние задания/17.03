@@ -1,0 +1,106 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+enum ClothingType {
+    TSHIRT,
+    PANTS,
+    DRESS,
+    JACKET,
+    SKIRT,
+    SHOES
+};
+
+class Clothes {
+private:
+    ClothingType category;  
+    string fullName;     
+    double price;         
+    string size;            
+    string color;           
+
+public:
+    Clothes(ClothingType cat, string name, double pr, string sz, string col) {
+        category = cat;
+        fullName = name;
+        price = pr;
+        size = sz;
+        color = col;
+    }
+
+    string getName() {
+        return fullName;
+    }
+
+    void setName(string name) {
+        fullName = name;
+    }
+
+    void setPrice(double pr) {
+        price = pr;
+    }
+    
+    ClothingType getCategory() {
+        return category;
+    }
+    void setCategory(ClothingType cat) {
+        category = cat;
+    }
+    
+    double getPrice() {
+        return price;
+    }
+    string getSize() {
+        return size;
+    }
+    
+    void setSize(string sz) {
+        size = sz;
+    }
+    
+    string getColor() {
+        return color;
+    }
+    
+    void setColor(string col) {
+        color = col;
+    }
+    
+    void show() {
+        cout << "Вид: ";
+        switch(category) {
+            case TSHIRT: cout << "Футболка"; break;
+            case PANTS: cout << "Штаны"; break;
+            case DRESS: cout << "Платье"; break;
+            case JACKET: cout << "Куртка"; break;
+            case SKIRT: cout << "Юбка"; break;
+            case SHOES: cout << "Обувь"; break;
+        }
+        cout << endl;
+        cout << "Название: " << fullName << endl;
+        cout << "Цена: " << price << " руб." << endl;
+        cout << "Размер: " << size << endl;
+        cout << "Цвет: " << color << endl;
+    }
+};
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    
+    Clothes shirt(TSHIRT, "Хлопковая футболка", 1500, "M", "розовая");
+    
+    cout << "Название: " << shirt.getName() << endl;
+    cout << "Цена: " << shirt.getPrice() << endl;
+    cout << "Вид: " << shirt.getCategory() << endl;
+    
+    shirt.setPrice(1200);
+    shirt.setName("Спортивная футболка");
+    
+    cout << "\nПосле изменений:" << endl;
+    cout << "Новое название: " << shirt.getName() << endl;
+    cout << "Новая цена: " << shirt.getPrice() << endl;
+    cout << "\nВся информация:" << endl;
+    shirt.show();
+    
+    return 0;
+}
