@@ -1,0 +1,239 @@
+// 1 
+DrawSquare(5, '*');
+DrawSquare(3, '#');
+static void DrawSquare(int sideLength, char symbol)
+{
+    for (int i = 0; i < sideLength; i++)
+    {
+        for (int j = 0; j < sideLength; j++)
+        {
+            Console.Write(symbol);
+        }
+        Console.WriteLine();
+    }
+    Console.WriteLine();
+}
+
+// 2
+Console.WriteLine($"1221 -> {IsPalindrome(1221)}");
+Console.WriteLine($"3443 -> {IsPalindrome(3443)}");
+Console.WriteLine($"7854 -> {IsPalindrome(7854)}");
+Console.WriteLine($"12321 -> {IsPalindrome(12321)}");
+static bool IsPalindrome(int number)
+{
+    string str = number.ToString();
+    for (int i = 0; i < str.Length / 2; i++)
+    {
+        if (str[i] != str[str.Length - 1 - i])
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+Console.WriteLine();
+
+// 3 
+int[] originalArray = { 1, 2, 6, -1, 88, 7, 6 };
+int[] filterArray = { 6, 88, 7 };
+
+Console.WriteLine("Оригинальный массив: " + string.Join(", ", originalArray));
+Console.WriteLine("Массив для фильтрации: " + string.Join(", ", filterArray));
+
+int[] result = FilterArray(originalArray, filterArray);
+Console.WriteLine("Результат: " + string.Join(", ", result));
+static int[] FilterArray(int[] original, int[] filter)
+{
+    List<int> resultList = new List<int>();
+
+    foreach (int item in original)
+    {
+        bool found = false;
+        foreach (int filterItem in filter)
+        {
+            if (item == filterItem)
+            {
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+        {
+            resultList.Add(item);
+        }
+    }
+
+    return resultList.ToArray();
+}
+
+Console.WriteLine();
+
+// 4 
+Website site = new Website();
+site.InputData();
+site.DisplayData();
+
+Console.WriteLine("\nДоступ к полям через методы:");
+Console.WriteLine($"Название: {site.GetName()}");
+Console.WriteLine($"Путь: {site.GetPath()}");
+
+Console.WriteLine();
+
+// 5 
+Magazine magazine = new Magazine();
+magazine.InputData();
+magazine.DisplayData();
+
+Console.WriteLine("\nДоступ к полям через методы:");
+Console.WriteLine($"Название журнала: {magazine.GetTitle()}");
+Console.WriteLine($"Email: {magazine.GetEmail()}");
+
+Console.WriteLine();
+
+// 6 
+Shop shop = new Shop();
+shop.InputData();
+shop.DisplayData();
+
+Console.WriteLine("\nДоступ к полям через методы:");
+Console.WriteLine($"Название магазина: {shop.GetName()}");
+Console.WriteLine($"Телефон: {shop.GetPhone()}");
+
+class Website
+{
+    private string name;      
+    private string path;    
+    private string description; 
+    private string ipAddress; 
+    public void InputData()
+    {
+        Console.WriteLine("Введите данные о веб-сайте:");
+        Console.Write("Название: ");
+        name = Console.ReadLine();
+        Console.Write("Путь к сайту: ");
+        path = Console.ReadLine();
+        Console.Write("Описание: ");
+        description = Console.ReadLine();
+        Console.Write("IP адрес: ");
+        ipAddress = Console.ReadLine();
+    }
+    public void DisplayData()
+    {
+        Console.WriteLine("\nИнформация о веб-сайте:");
+        Console.WriteLine($"Название: {name}");
+        Console.WriteLine($"Путь: {path}");
+        Console.WriteLine($"Описание: {description}");
+        Console.WriteLine($"IP адрес: {ipAddress}");
+    }
+
+    public string GetName() { return name; }
+    public void SetName(string value) { name = value; }
+
+    public string GetPath() { return path; }
+    public void SetPath(string value) { path = value; }
+
+    public string GetDescription() { return description; }
+    public void SetDescription(string value) { description = value; }
+
+    public string GetIpAddress() { return ipAddress; }
+    public void SetIpAddress(string value) { ipAddress = value; }
+}
+
+class Magazine
+{
+    private string title;    
+    private int foundationYear;  
+    private string description;  
+    private string phone;        
+    private string email;        
+
+    public void InputData()
+    {
+        Console.WriteLine("Введите данные о журнале:");
+        Console.Write("Название: ");
+        title = Console.ReadLine();
+        Console.Write("Год основания: ");
+        foundationYear = int.Parse(Console.ReadLine());
+        Console.Write("Описание: ");
+        description = Console.ReadLine();
+        Console.Write("телефон: ");
+        phone = Console.ReadLine();
+        Console.Write("e-mail: ");
+        email = Console.ReadLine();
+    }
+
+    public void DisplayData()
+    {
+        Console.WriteLine("\nИнформация о журнале:");
+        Console.WriteLine($"Название: {title}");
+        Console.WriteLine($"Год основания: {foundationYear}");
+        Console.WriteLine($"Описание: {description}");
+        Console.WriteLine($"Телефон: {phone}");
+        Console.WriteLine($"Email: {email}");
+    }
+
+    public string GetTitle() { return title; }
+    public void SetTitle(string value) { title = value; }
+
+    public int GetFoundationYear() { return foundationYear; }
+    public void SetFoundationYear(int value) { foundationYear = value; }
+
+    public string GetDescription() { return description; }
+    public void SetDescription(string value) { description = value; }
+
+    public string GetPhone() { return phone; }
+    public void SetPhone(string value) { phone = value; }
+
+    public string GetEmail() { return email; }
+    public void SetEmail(string value) { email = value; }
+}
+
+class Shop
+{
+    private string name;       
+    private string address;      
+    private string profile;      
+    private string phone;     
+    private string email;        
+
+    public void InputData()
+    {
+        Console.WriteLine("Введите данные о магазине:");
+        Console.Write("Название магазина: ");
+        name = Console.ReadLine();
+        Console.Write("Адрес: ");
+        address = Console.ReadLine();
+        Console.Write("Профиль магазина: ");
+        profile = Console.ReadLine();
+        Console.Write("телефон: ");
+        phone = Console.ReadLine();
+        Console.Write("e-mail: ");
+        email = Console.ReadLine();
+    }
+
+    public void DisplayData()
+    {
+        Console.WriteLine("\nИнформация о магазине:");
+        Console.WriteLine($"Название: {name}");
+        Console.WriteLine($"Адрес: {address}");
+        Console.WriteLine($"Профиль: {profile}");
+        Console.WriteLine($"Телефон: {phone}");
+        Console.WriteLine($"Email: {email}");
+    }
+
+    public string GetName() { return name; }
+    public void SetName(string value) { name = value; }
+
+    public string GetAddress() { return address; }
+    public void SetAddress(string value) { address = value; }
+
+    public string GetProfile() { return profile; }
+    public void SetProfile(string value) { profile = value; }
+
+    public string GetPhone() { return phone; }
+    public void SetPhone(string value) { phone = value; }
+
+    public string GetEmail() { return email; }
+    public void SetEmail(string value) { email = value; }
+}
