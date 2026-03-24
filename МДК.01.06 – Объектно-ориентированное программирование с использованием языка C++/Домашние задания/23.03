@@ -1,0 +1,343 @@
+/*
+Приложение: Библиотека фильмов
+Основные функции:
+- Просмотр каталога;
+- Добавления фильма в каталог;
+- Удаление фильма из каталога;
+- Поиск фильма по названию;
+- Редактирование фильма;
+- Фильтрация по жанру.
+*/
+
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <cctype>
+using namespace std;
+
+/// @brief Фильм
+class Movie{
+    public:
+
+        Movie(string title, string genre, double rating, int duration){
+            this->title = title;
+            this->genre = genre;
+            this->rating = rating;
+            this->duration = duration;
+        }
+
+        string getTitle(){ return title; };
+        string getGenre(){ return genre; };
+        double getRating(){ return rating; };
+        int getDuration(){ return duration; };
+
+        void setTitle(string newTitle){ title = newTitle; };
+        void setGenre(string newGenre){ genre = newGenre; };
+        void setRating(double newRating){ rating = newRating; };
+        void setDuration(int newDuration){ duration = newDuration; };
+
+        /// @brief Вывод информации о фильме
+        void display(){
+            cout << "Фильм – " << title << "\nЖанр – " << genre << "\nРейтинг – " << rating << "\nДлительность – " << duration << " мин.\n" << endl;
+        }
+
+    private:
+        string title; 
+        string genre; 
+        double rating; 
+        int duration; 
+};
+
+/// @brief Каталог фильмов
+class Catalog{
+    public:
+        /// @brief Добавление фильма
+        /// @param title Название фильма
+        /// @param genre Жанр фильма
+        /// @param rating Рейтинг фильма
+        /// @param duration Длительность фильма
+        void addMovie(string title, string genre, double rating, int duration){
+            movies.push_back(Movie(title, genre, rating, duration));
+            cout << "Фильм добавлен\n\n";
+        }
+        
+        /// @brief Удаление фильма
+        /// @param title Название фильма
+        void removeMovie(string title){
+            bool found = false;
+            for(int i = 0; i < movies.size(); i++){
+                if(movies[i].getTitle() == title){
+                    movies.erase(movies.begin() + i);
+                    cout << "Фильм удален\n\n";
+                    found = true;
+                    break;
+                }
+            }
+            if(!found){
+                cout << "Фильм не найден\n\n";
+            }
+        }
+        
+        /// @brief Редактирование фильма
+        /// @param title Название фильма для поиска
+        void editMovie(string title){
+            bool found = false;
+            for(int i = 0; i < movies.size(); i++){
+                if(movies[i].getTitle() == title){
+                    found = true;
+                    cout << "\nРедактирование фильма: " << movies[i].getTitle() << endl;
+                    cout << "Текущая информация:\n";
+                    movies[i].display();
+                    
+                    int editChoice;
+                    do{
+                        cout << "Что хотите изменить?\n";
+                        cout << "1. Название\n";
+                        cout << "2. Жанр\n";
+                        cout << "3. Рейтинг\n";
+                        cout << "4. Длительность\n";
+                        cout << "0. Завершить редактирование\n";
+                        cout << "Выбор: ";
+                        cin >> editChoice;
+                        cin.ignore();
+                        
+                        switch(editChoice){
+                            case 1:{
+                                string newTitle;
+                                cout << "Новое название: ";
+                                getline(cin, newTitle);
+                                movies[i].setTitle(newTitle);
+                                cout << "Название обновлено!\n";
+                                break;
+                            }
+                            case 2:{
+                                string newGenre;
+                                cout << "Новый жанр: ";
+                                getline(cin, newGenre);
+                                movies[i].setGenre(newGenre);
+                                cout << "Жанр обновлен!\n";
+                                break;
+                            }
+                            case 3:{
+                                double newRating;
+                                cout << "Новый рейтинг: ";
+                                cin >> newRating;
+                                movies[i].setRating(newRating);
+                                cout << "Рейтинг обновлен!\n";
+                                break;
+                            }
+                            case 4:{
+                                int newDuration;
+                                cout << "Новая длительность (мин): ";
+                                cin >> newDuration;
+                                movies[i].setDuration(newDuration);
+                                cout << "Длительность обновлена!\n";
+                                break;
+                            }
+                            case 0:
+                                cout << "Редактирование завершено\n";
+                                break;
+                            default:
+                                cout << "Неверный выбор\n";
+                        }
+                        cout << endl;
+                    } while(editChoice != 0);
+                    
+                    cout << "Обновленная информация:\n";
+                    movies[i].display();
+                    break;
+                }
+            }
+            if(!found){
+                cout << "Фильм не найден\n\n";
+            }
+        }
+
+        /// @brief Поиск по заголовку
+        /// @param title 
+        void findByTitle(string title){
+            bool found = false;
+            cout << "\nРезультаты поиска:\n";
+            for(Movie movie : movies){
+                if(movie.getTitle() == title){
+                    movie.display();
+                    found = true;
+                }
+            }
+            if(!found){
+                cout << "Фильм не найден\n\n";
+            }
+        }
+        
+        /// @brief Фильтрация по жанру
+        /// @param genre Жанр для фильтрации
+        void filterByGenre(string genre){
+            bool found = false;
+            cout << "\nФильмы в жанре '" << genre << "':\n";
+            for(Movie movie : movies){
+                string movieGenre = movie.getGenre();
+                string searchGenre = genre;
+                transform(movieGenre.begin(), movieGenre.end(), movieGenre.begin(), ::tolower);
+                transform(searchGenre.begin(), searchGenre.end(), searchGenre.begin(), ::tolower);
+                
+                if(movieGenre == searchGenre){
+                    movie.display();
+                    found = true;
+                }
+            }
+            if(!found){
+                cout << "Фильмы в жанре '" << genre << "' не найдены\n\n";
+            }
+        }
+        
+        /// @brief Просмотр всех фильмов
+        void showMovies(){
+            if(movies.empty()){
+                cout << "Каталог пуст\n\n";
+                return;
+            }
+            cout << "\nВсе фильмы в каталоге:\n";
+            for(Movie movie : movies){
+                movie.display();
+            }
+        }
+        
+        /// @brief Получение списка всех жанров (для подсказки)
+        void showGenres(){
+            vector<string> genres;
+            for(Movie movie : movies){
+                bool found = false;
+                for(string g : genres){
+                    if(g == movie.getGenre()){
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found){
+                    genres.push_back(movie.getGenre());
+                }
+            }
+            
+            if(genres.empty()){
+                cout << "Нет доступных жанров\n";
+            } else {
+                cout << "Доступные жанры: ";
+                for(int i = 0; i < genres.size(); i++){
+                    cout << genres[i];
+                    if(i < genres.size() - 1) cout << ", ";
+                }
+                cout << endl;
+            }
+        }
+
+    private:
+        vector<Movie> movies; 
+};
+
+int main(){
+    Catalog movies; 
+    int choice; 
+    do{
+        cout << "1. Показать все фильмы\n";
+        cout << "2. Добавить фильм\n";
+        cout << "3. Найти фильм по названию\n";
+        cout << "4. Удалить фильм\n";
+        cout << "5. Редактировать фильм\n";
+        cout << "6. Фильтровать по жанру\n";
+        cout << "7. Показать доступные жанры\n";
+        cout << "0. Выход\n";
+        cout << "Выбор: ";
+        cin >> choice;
+
+        cin.ignore(); 
+
+        switch(choice){
+
+            case 1:
+                movies.showMovies();
+                break;
+
+            case 2:{
+                string title, genre;
+                double rating;
+                int duration;
+
+                cout << "Название: ";
+                getline(cin, title);
+                
+                if(title.empty()){
+                    cout << "Название не может быть пустым!\n";
+                    break;
+                }
+
+                cout << "Жанр: ";
+                getline(cin, genre);
+
+                cout << "Рейтинг (0-10): ";
+                cin >> rating;
+                if(rating < 0 || rating > 10){
+                    cout << "Рейтинг должен быть от 0 до 10. Установлено значение по умолчанию 0\n";
+                    rating = 0;
+                }
+                
+                cout << "Длительность (мин): ";
+                cin >> duration;
+                
+                if(duration <= 0){
+                    cout << "Длительность должна быть положительной. Установлено значение по умолчанию 90\n";
+                    duration = 90;
+                }
+                
+                movies.addMovie(title, genre, rating, duration);
+                break;
+            }
+
+            case 3:{
+                string title;
+                cout << "Введите название: ";
+                getline(cin, title);
+                movies.findByTitle(title);
+                break;
+            }
+
+            case 4:{
+                string title;
+                cout << "Введите название для удаления: ";
+                getline(cin, title);
+                movies.removeMovie(title);
+                break;
+            }
+            
+            case 5:{
+                string title;
+                cout << "Введите название фильма для редактирования: ";
+                getline(cin, title);
+                movies.editMovie(title);
+                break;
+            }
+            
+            case 6:{
+                string genre;
+                cout << "Введите жанр для фильтрации: ";
+                getline(cin, genre);
+                movies.filterByGenre(genre);
+                break;
+            }
+            
+            case 7:
+                movies.showGenres();
+                break;
+
+            case 0:
+                cout << "До свидания!" << endl;
+                break;
+
+            default:
+                cout << "Неверный выбор. Пожалуйста, выберите пункт от 0 до 7\n";
+        }
+    } while(choice != 0);
+    
+    return 0;
+}
