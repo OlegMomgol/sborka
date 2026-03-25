@@ -1,0 +1,355 @@
+// Приложение: Библиотека фильмов DIP 
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <memory>
+using namespace std;
+
+/// @brief Фильм
+class Movie {
+public:
+    Movie(string title, string genre, double rating, int duration)
+        : title(title), genre(genre), rating(rating), duration(duration) {}
+
+    string getTitle() const { return title; }
+    string getGenre() const { return genre; }
+    double getRating() const { return rating; }
+    int getDuration() const { return duration; }
+    
+    void setTitle(const string& newTitle) { title = newTitle; }
+    void setGenre(const string& newGenre) { genre = newGenre; }
+    void setRating(double newRating) { rating = newRating; }
+    void setDuration(int newDuration) { duration = newDuration; }
+
+    void display() const {
+        cout << "Фильм – " << title << "\nЖанр – " << genre 
+             << "\nРейтинг – " << rating << "\nДлительность – " 
+             << duration << " мин.\n" << endl;
+    }
+
+private:
+    string title;
+    string genre;
+    double rating;
+    int duration;
+};
+
+class IRepository {
+public:
+    virtual ~IRepository() = default;
+    
+    virtual void add(const Movie& movie) = 0;
+    virtual void remove(const string& title) = 0;
+    virtual bool update(const string& title, const Movie& updatedMovie) = 0;
+    virtual vector<Movie> findAll() const = 0;
+    virtual vector<Movie> findByTitle(const string& title) const = 0;
+    virtual vector<Movie> findByGenre(const string& genre) const = 0;
+    virtual bool exists(const string& title) const = 0;
+    virtual size_t getCount() const = 0;
+};
+
+
+class ILogger {
+public:
+    virtual ~ILogger() = default;
+    virtual void log(const string& message) = 0;
+    virtual void logError(const string& error) = 0;
+    virtual void logSuccess(const string& message) = 0;
+};
+
+class VectorRepository : public IRepository {
+public:
+    void add(const Movie& movie) override {
+        movies.push_back(movie);
+    }
+    
+    void remove(const string& title) override {
+        auto it = remove_if(movies.begin(), movies.end(),
+            [&title](const Movie& m) { return m.getTitle() == title; });
+        movies.erase(it, movies.end());
+    }
+    
+    bool update(const string& title, const Movie& updatedMovie) override {
+        for (auto& movie : movies) {
+            if (movie.getTitle() == title) {
+                movie = updatedMovie;
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    vector<Movie> findAll() const override {
+        return movies;
+    }
+    
+    vector<Movie> findByTitle(const string& title) const override {
+        vector<Movie> result;
+        for (const auto& movie : movies) {
+            if (movie.getTitle() == title) {
+                result.push_back(movie);
+            }
+        }
+        return result;
+    }
+    
+    vector<Movie> findByGenre(const string& genre) const override {
+        vector<Movie> result;
+        string genreLower = toLower(genre);
+        for (const auto& movie : movies) {
+            if (toLower(movie.getGenre()) == genreLower) {
+                result.push_back(movie);
+            }
+        }
+        return result;
+    }
+    
+    bool exists(const string& title) const override {
+        return any_of(movies.begin(), movies.end(),
+            [&title](const Movie& m) { return m.getTitle() == title; });
+    }
+    
+    size_t getCount() const override {
+        return movies.size();
+    }
+    
+private:
+    vector<Movie> movies;
+    
+    static string toLower(const string& str) {
+        string result = str;
+        transform(result.begin(), result.end(), result.begin(), ::tolower);
+        return result;
+    }
+};
+
+class ConsoleLogger : public ILogger {
+public:
+    void log(const string& message) override {
+        cout << "[LOG] " << message << endl;
+    }
+    
+    void logError(const string& error) override {
+        cerr << "[ERROR] " << error << endl;
+    }
+    
+    void logSuccess(const string& message) override {
+        cout << "[SUCCESS] " << message << endl;
+    }
+};
+
+class Catalog {
+public:
+
+    Catalog(shared_ptr<IRepository> repository, shared_ptr<ILogger> logger)
+        : repo(repository), logger(logger) {}
+    
+    void addMovie(const string& title, const string& genre, double rating, int duration) {
+        if (title.empty()) {
+            logger->logError("Название фильма не может быть пустым");
+            return;
+        }
+        
+        if (repo->exists(title)) {
+            logger->logError("Фильм с названием '" + title + "' уже существует");
+            return;
+        }
+        
+        Movie movie(title, genre, rating, duration);
+        repo->add(movie);
+        logger->logSuccess("Фильм '" + title + "' добавлен в каталог");
+    }
+    
+    void removeMovie(const string& title) {
+        if (!repo->exists(title)) {
+            logger->logError("Фильм '" + title + "' не найден");
+            return;
+        }
+        
+        repo->remove(title);
+        logger->logSuccess("Фильм '" + title + "' удален из каталога");
+    }
+    
+    void editMovie(const string& title, const string& newTitle, 
+                   const string& newGenre, double newRating, int newDuration) {
+        if (!repo->exists(title)) {
+            logger->logError("Фильм '" + title + "' не найден");
+            return;
+        }
+        
+        Movie updatedMovie(newTitle.empty() ? title : newTitle,
+                          newGenre, newRating, newDuration);
+        
+        if (repo->update(title, updatedMovie)) {
+            logger->logSuccess("Фильм '" + title + "' успешно обновлен");
+        } else {
+            logger->logError("Не удалось обновить фильм");
+        }
+    }
+    
+    void findByTitle(const string& title) const {
+        auto results = repo->findByTitle(title);
+        
+        if (results.empty()) {
+            logger->log("Фильм '" + title + "' не найден");
+            return;
+        }
+        
+        logger->log("Найденные фильмы по названию '" + title + "':");
+        for (const auto& movie : results) {
+            movie.display();
+        }
+    }
+    
+    void filterByGenre(const string& genre) const {
+        auto results = repo->findByGenre(genre);
+        
+        if (results.empty()) {
+            logger->log("Фильмы в жанре '" + genre + "' не найдены");
+            return;
+        }
+        
+        logger->log("Фильмы в жанре '" + genre + "':");
+        for (const auto& movie : results) {
+            movie.display();
+        }
+    }
+    
+    void showAllMovies() const {
+        auto movies = repo->findAll();
+        
+        if (movies.empty()) {
+            logger->log("Каталог пуст");
+            return;
+        }
+        
+        logger->log("Все фильмы в каталоге (всего: " + to_string(movies.size()) + "):");
+        for (const auto& movie : movies) {
+            movie.display();
+        }
+    }
+    
+    void showGenres() const {
+        auto movies = repo->findAll();
+        vector<string> genres;
+        
+        for (const auto& movie : movies) {
+            const string& genre = movie.getGenre();
+            if (find(genres.begin(), genres.end(), genre) == genres.end()) {
+                genres.push_back(genre);
+            }
+        }
+        
+        if (genres.empty()) {
+            logger->log("Нет доступных жанров");
+        } else {
+            string genresList;
+            for (size_t i = 0; i < genres.size(); i++) {
+                genresList += genres[i];
+                if (i < genres.size() - 1) genresList += ", ";
+            }
+            logger->log("Доступные жанры: " + genresList);
+        }
+    }
+    
+private:
+    shared_ptr<IRepository> repo;  
+    shared_ptr<ILogger> logger;    
+};
+
+class FileRepository : public IRepository {
+public:
+    FileRepository(const string& filename) : filename(filename) {
+        cout << "[FileRepository] Инициализация с файлом: " << filename << endl;
+    }
+    
+    void add(const Movie& movie) override {
+        cout << "[FileRepository] Сохранение в файл: " << movie.getTitle() << endl;
+    }
+    
+    void remove(const string& title) override {
+        cout << "[FileRepository] Удаление из файла: " << title << endl;
+    }
+    
+    bool update(const string& title, const Movie& updatedMovie) override {
+        cout << "[FileRepository] Обновление в файле: " << title << endl;
+        return true;
+    }
+    
+    vector<Movie> findAll() const override {
+        cout << "[FileRepository] Чтение из файла" << endl;
+        return {};
+    }
+    
+    vector<Movie> findByTitle(const string& title) const override {
+        cout << "[FileRepository] Поиск в файле по названию: " << title << endl;
+        return {};
+    }
+    
+    vector<Movie> findByGenre(const string& genre) const override {
+        cout << "[FileRepository] Поиск в файле по жанру: " << genre << endl;
+        return {};
+    }
+    
+    bool exists(const string& title) const override {
+        cout << "[FileRepository] Проверка существования: " << title << endl;
+        return false;
+    }
+    
+    size_t getCount() const override {
+        return 0;
+    }
+    
+private:
+    string filename;
+};
+
+class SilentLogger : public ILogger {
+public:
+    void log(const string&) override {}
+    void logError(const string&) override {}
+    void logSuccess(const string&) override {}
+};
+
+
+int main() {
+    
+    // Вариант 1
+    cout << " 1. VectorRepository + ConsoleLogger n";
+    auto repo1 = make_shared<VectorRepository>();
+    auto logger1 = make_shared<ConsoleLogger>();
+    Catalog catalog1(repo1, logger1);
+    
+    catalog1.addMovie("Начало", "фантастика", 8.8, 148);
+    catalog1.addMovie("Побег из Шоушенка", "драма", 9.3, 142);
+    catalog1.addMovie("Криминальное чтиво", "криминал", 8.9, 154);
+    
+    catalog1.showAllMovies();
+    catalog1.filterByGenre("драма");
+    
+    cout << "\n 2. FileRepository + ConsoleLogger\n";
+    auto repo2 = make_shared<FileRepository>("movies.dat");
+    auto logger2 = make_shared<ConsoleLogger>();
+    Catalog catalog2(repo2, logger2);
+    
+    catalog2.addMovie("Тестовый фильм", "боевик", 7.5, 120);
+    catalog2.showAllMovies();
+    
+    cout << "\n 3. VectorRepository + SilentLogger\n";
+    auto repo3 = make_shared<VectorRepository>();
+    auto logger3 = make_shared<SilentLogger>();
+    Catalog catalog3(repo3, logger3);
+    
+    catalog3.addMovie("Секретный фильм", "триллер", 8.0, 110);
+    catalog3.showAllMovies();  
+
+    cout << "1. Catalog не зависит от конкретного способа хранения данных\n";
+    cout << "2. Catalog не зависит от конкретного способа логирования\n";
+    cout << "3. Легко добавлять новые реализации (БД, файлы, API и т.д.)\n";
+    cout << "4. Легко тестировать (можно подставить mock-объекты)\n";
+    cout << "5. Код становится более гибким и поддерживаемым\n";
+    
+    return 0;
+}
