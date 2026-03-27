@@ -1,0 +1,41 @@
+import 'package:flutter/material.dart';
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.network(
+                  'https://avatars.mds.yandex.net/i?id=a9e36f72211d8e5e82c5fe9429054b68_l-9268554-images-thumbs&ref=rim&n=13&w=1280&h=720',
+                  width: 200,
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.favorite_border, size: 32),
+                  SizedBox(width: 32),
+                  Icon(Icons.playlist_add, size: 32),
+                  SizedBox(width: 32),
+                  Icon(Icons.share, size: 32),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
