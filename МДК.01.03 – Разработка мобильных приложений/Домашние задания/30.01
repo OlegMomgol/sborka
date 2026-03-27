@@ -1,0 +1,56 @@
+import 'package:flutter/material.dart';
+import 'package:getflutter/getflutter.dart';
+
+class ProfileCard extends StatelessWidget {
+  const ProfileCard({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const GFAvatar(
+              size: 80,
+              child: Icon(Icons.person, size: 60, color: Colors.white),
+              backgroundColor: Colors.blueGrey,
+            ), 
+            const SizedBox(height: 16),
+            const Text(
+              'Александра',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ), 
+            const Text(
+              'дизайнер',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ), 
+            const SizedBox(height: 24),
+            GFRating(
+              value: 4,
+              itemCount: 5,
+              size: GFSize.SMALL,
+              color: const Color.fromARGB(255, 192, 192, 192),
+              borderColor: const Color.fromARGB(255, 6, 160, 6),
+              allowHalfRating: true,
+              onChanged: (value) {},
+            ), 
+            const SizedBox(height: 24),
+            GFListTile(
+              titleText: 'Email',
+              subtitleText: 'sveta2843596@gmail.com',
+              icon: const Icon(Icons.email),
+            ), 
+            const SizedBox(height: 16),
+            GFListTile(
+              titleText: 'Телефон',
+              subtitleText: '+7 (***)-***-**-**',
+              icon: const Icon(Icons.phone),
+            ), 
+          ],
+        ),
+      ),
+    );
+  }
+}
