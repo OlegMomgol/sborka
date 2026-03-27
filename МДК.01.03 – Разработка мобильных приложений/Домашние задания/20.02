@@ -1,0 +1,141 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Войти',
+      theme: ThemeData(
+        primarySwatch: const Color.fromARGB(255, 248, 155, 33),
+      ),
+      home: LoginScreen(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _loginController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  
+  final String _correctLogin = 'user';
+  final String _correctPassword = 'user123';
+
+  void _login() {
+    String login = _loginController.text;
+    String password = _passwordController.text;
+    
+    if (login == _correctLogin && password == _correctPassword) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SecondScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Неверные логин или пароль'),
+          duration: Duration(seconds: 2),
+          backgroundColor: const Color.fromARGB(255, 226, 134, 28),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Вход в систему'),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: _loginController,
+              decoration: InputDecoration(
+                labelText: 'Логин',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person),
+              ),
+            ),
+            SizedBox(height: 20),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Пароль',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.lock),
+              ),
+            ),
+            SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: _login,
+              child: Text(
+                'Войти',
+                style: TextStyle(fontSize: 18),
+              ),
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(double.infinity, 50),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SecondScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Добро пожаловать'),
+        centerTitle: true,
+        automaticallyImplyLeading: false, 
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.network(
+              'https://i.pinimg.com/736x/31/e1/c7/31e1c7378bdd275e2a24e721dcfe9ddd.jpg',
+              width: 300,
+              height: 300,
+              fit: BoxFit.cover,
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Вы вошли',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: const Color.fromARGB(255, 233, 133, 75),
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); 
+              },
+              child: Text('Выйти'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
