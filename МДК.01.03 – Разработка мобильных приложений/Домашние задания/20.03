@@ -1,0 +1,120 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 133, 108, 175)),
+        useMaterial3: true,
+      ),
+      home: const MyHomePage(title: 'Список оценок'),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final List<Map<String, dynamic>> _subjects = [
+    {'name': 'Математика', 'grade': 95},
+    {'name': 'Физика', 'grade': 82},
+    {'name': 'Информатика', 'grade': 63},
+    {'name': 'Русский язык', 'grade': 45},
+    {'name': 'История', 'grade': 73},
+    {'name': 'Химия', 'grade': 22},
+    {'name': 'Биология', 'grade': 75},
+    {'name': 'Литература', 'grade': 13},
+  ];
+
+  Color _getColorForGrade(int grade) {
+    if (grade >= 80) {
+      return Colors.green; // Отлично
+    } else if (grade >= 60) {
+      return Colors.orange; // Хорошо
+    } else {
+      return Colors.red; // Нужно подтянуть
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(widget.title),
+      ),
+      body: ListView.builder(
+        itemCount: _subjects.length,
+        itemBuilder: (context, index) {
+          final subject = _subjects[index];
+          final name = subject['name'] as String;
+          final grade = subject['grade'] as int;
+
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: ListTile(
+              leading: const Icon(Icons.school),
+              title: Text(
+                name,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+              ),
+              trailing: GradeBadge(
+                grade: grade,
+                color: _getColorForGrade(grade),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class GradeBadge extends StatelessWidget {
+  final int grade;
+  final Color color;
+
+  const GradeBadge({
+    super.key,
+    required this.grade,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: color,
+          width: 1.5,
+        ),
+      ),
+      child: Text(
+        '$grade',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
