@@ -1,0 +1,77 @@
+#include <iostream>
+#include <stdexcept>
+
+class Array {
+private:
+    static const int SIZE = 5; 
+    int data[SIZE];             
+
+public:
+    Array() {
+        for (int i = 0; i < SIZE; i++) {
+            data[i] = 0;
+        }
+    }
+
+    Array(int value) {
+        for (int i = 0; i < SIZE; i++) {
+            data[i] = value;
+        }
+    }
+
+    int& operator[](int index) {
+        if (index < 0 || index >= SIZE) {
+            throw std::out_of_range("Индекс выходит за границы");
+        }
+        return data[index];
+    }
+
+    const int& operator[](int index) const {
+        if (index < 0 || index >= SIZE) {
+            throw std::out_of_range("Индекс выходит за границы );
+        }
+        return data[index];
+    }
+
+    int size() const {
+        return SIZE;
+    }
+
+    void print() const {
+        std::cout << "[";
+        for (int i = 0; i < SIZE; i++) {
+            std::cout << data[i];
+            if (i < SIZE - 1) std::cout << ", ";
+        }
+        std::cout << "]";
+    }
+};
+
+int main() {
+
+    Array arr;
+
+    std::cout << "Заполняем массив значениями 10, 20, 30, 40, 50:\n";
+    for (int i = 0; i < arr.size(); i++) {
+        arr[i] = (i + 1) * 10;
+    }
+    
+    std::cout << "Содержимое массива: ";
+    arr.print();
+    std::cout << std::endl;
+    std::cout << "\nЭлемент с индексом 2: " << arr[2] << std::endl;
+    std::cout << "Элемент с индексом 4: " << arr[4] << std::endl;
+    arr[0] = 100;
+    std::cout << "После изменения arr[0] = 100: ";
+    arr.print();
+    std::cout << std::endl;
+    std::cout << "\nПроверка проверки границ:\n";
+    std::cout << "Попытка доступа к arr[5] (выход за границы): ";
+    try {
+        arr[5] = 999; 
+    } catch (const std::out_of_range& e) {
+        std::cout << "Ошибка: " << e.what() << std::endl;
+    }
+    
+    return 0;
+}
