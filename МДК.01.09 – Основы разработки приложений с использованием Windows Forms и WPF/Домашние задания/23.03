@@ -1,0 +1,38 @@
+using System;
+
+public class Order
+{
+    private static int nextId = 1;
+
+    private int OrderId;
+    public Order()
+    {
+        OrderId = nextId;
+        nextId++;
+    }
+    public void DisplayInfo()
+    {
+        Console.WriteLine($"Order #{OrderId}");
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Order order1 = new Order();
+        Order order2 = new Order();
+        Order order3 = new Order();
+        Order order4 = new Order();
+
+        Console.WriteLine("Созданные заказы:");
+        order1.DisplayInfo();
+        order2.DisplayInfo();
+        order3.DisplayInfo();
+        order4.DisplayInfo();
+        
+        Console.WriteLine("\nСоздаем пятый заказ:");
+        Order order5 = new Order();
+        order5.DisplayInfo();
+    }
+}
