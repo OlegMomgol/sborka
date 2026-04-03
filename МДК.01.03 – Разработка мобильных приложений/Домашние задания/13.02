@@ -1,0 +1,199 @@
+import 'package:flutter/material.dart';
+import 'package:getwidget/getwidget.dart';
+
+void main() {
+  runApp(const RegistrationApp());
+}
+
+class RegistrationApp extends StatelessWidget {
+  const RegistrationApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Регистрация',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.deepPurple,
+        useMaterial3: true,
+      ),
+      home: const RegistrationForm(),
+    );
+  }
+}
+
+class RegistrationForm extends StatefulWidget {
+  const RegistrationForm({super.key});
+
+  @override
+  State<RegistrationForm> createState() => _RegistrationFormState();
+}
+
+class _RegistrationFormState extends State<RegistrationForm> {
+  final TextEditingController _loginController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  String? _loginError;
+  String? _passwordError;
+
+  String? _validateLogin(String login) {
+    if (login.length < 4) {
+      return 'Логин должен содержать минимум 4 символа';
+    }
+    if (login.length > 15) {
+      return 'Логин не должен превышать 15 символов';
+    }
+
+    final RegExp regex = RegExp(r'^[a-zA-Z0-9_]+$');
+    if (!regex.hasMatch(login)) {
+      return 'Логин может содержать только буквы, цифры и символ подчёркивания';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String password) {
+    if (password.length < 6) {
+      return 'Пароль должен содержать минимум 6 символов';
+    }
+    if (password.length > 20) {
+      return 'Пароль не должен превышать 20 символов';
+    }
+    if (!password.contains(RegExp(r'[0-9]'))) {
+      return 'Пароль должен содержать хотя бы одну цифру';
+    }
+    if (!password.contains(RegExp(r'[A-Z]'))) {
+      return 'Пароль должен содержать хотя бы одну заглавную букву';
+    }
+    if (!password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
+      return 'Пароль должен содержать хотя бы один спецсимвол (!@#\$%^&* и т.д.)';
+    }
+    return null;
+  }
+
+  void _onLoginChanged(String value) {
+    setState(() {
+      _loginError = _validateLogin(value);
+    });
+  }
+
+  void _onPasswordChanged(String value) {
+    setState(() {
+      _passwordError = _validatePassword(value);
+    });
+  }
+
+  void _register() {
+    final String login = _loginController.text;
+    final String password = _passwordController.text;
+
+    final String? loginErrorFinal = _validateLogin(login);
+    final String? passwordErrorFinal = _validatePassword(password);
+
+    setState(() {
+      _loginError = loginErrorFinal;
+      _passwordError = passwordErrorFinal;
+    });
+
+    if (loginErrorFinal == null && passwordErrorFinal == null) {
+      GFToast.show(
+        'Регистрация успешна! Добро пожаловать, $login',
+        context,
+        toastPosition: GFToastPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    } else {
+      GFToast.show(
+        'Ошибка регистрации: проверьте поля',
+        context,
+        toastPosition: GFToastPosition.BOTTOM,
+        backgroundColor: const Color.fromARGB(255, 170, 11, 0),
+        textColor: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _loginController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Регистрация'),
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.person_add,
+              size: 80,
+              color: Colors.deepPurple,
+            ),
+            const SizedBox(height: 30),
+
+            TextField(
+              controller: _loginController,
+              onChanged: _onLoginChanged,
+              onSubmitted: (_) => _register(), 
+              decoration: InputDecoration(
+                labelText: 'Логин',
+                hintText: 'например: user_123',
+                prefixIcon: const Icon(Icons.person),
+                errorText: _loginError,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              onChanged: _onPasswordChanged,
+              onSubmitted: (_) => _register(),
+              decoration: InputDecoration(
+                labelText: 'Пароль',
+                hintText: 'минимум 6 символов',
+                prefixIcon: const Icon(Icons.lock),
+                errorText: _passwordError,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: _register,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Зарегистрироваться',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
