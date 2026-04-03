@@ -1,0 +1,388 @@
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:math';
+
+void main() {
+  runApp(const VictorinaApp());
+}
+
+class VictorinaApp extends StatelessWidget {
+  const VictorinaApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Викторина',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
+      ),
+      home: const VictorinaHome(),
+    );
+  }
+}
+
+class VictorinaHome extends StatefulWidget {
+  const VictorinaHome({super.key});
+
+  @override
+  State<VictorinaHome> createState() => _VictorinaHomeState();
+}
+
+class _VictorinaHomeState extends State<VictorinaHome> {
+  int _bestScore = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBestScore();
+  }
+
+  Future<void> _loadBestScore() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _bestScore = prefs.getInt('best_score') ?? 0;
+    });
+  }
+
+  Future<void> _saveBestScore(int score) async {
+    final prefs = await SharedPreferences.getInstance();
+    final bestScore = prefs.getInt('best_score') ?? 0;
+    if (score > bestScore) {
+      await prefs.setInt('best_score', score);
+      setState(() => _bestScore = score);
+    }
+  }
+
+  Future<void> _resetBestScore() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('best_score');
+    setState(() => _bestScore = 0);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Рекорд сброшен')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Викторина'),
+        centerTitle: true,
+        elevation: 2,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.quiz, size: 100, color: Color.fromARGB(255, 0, 134, 243)),
+            const SizedBox(height: 32),
+            const Text(
+              'Викторина',
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                'Рекорд: $_bestScore',
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => QuizScreen(onFinish: _saveBestScore),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                backgroundColor: const Color.fromARGB(255, 15, 68, 112),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text(
+                'Начать',
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: _resetBestScore,
+              style: TextButton.styleFrom(
+                foregroundColor: const Color.fromARGB(255, 173, 12, 0),
+              ),
+              child: const Text('Сбросить рекорд'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class QuizScreen extends StatefulWidget {
+  final Function(int) onFinish;
+
+  const QuizScreen({super.key, required this.onFinish});
+
+  @override
+  State<QuizScreen> createState() => _QuizScreenState();
+}
+
+class _QuizScreenState extends State<QuizScreen> {
+  late List<Map<String, dynamic>> _questions;
+  int _currentQuestion = 0;
+  int _score = 0;
+  bool _answered = false;
+  bool _showResult = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initQuestions();
+  }
+
+  void _initQuestions() {
+    _questions = [
+      {
+        'question': 'Какой язык программирования используется во Flutter?',
+        'options': ['Java', 'Kotlin', 'Dart', 'Swift'],
+        'correct': 2,
+      },
+      {
+        'question': 'Кто создал фреймворк Flutter?',
+        'options': ['Facebook', 'Apple', 'Microsoft', 'Google'],
+        'correct': 3,
+      },
+      {
+        'question': 'Что такое StatelessWidget?',
+        'options': [
+          'Виджет, который может менять состояние',
+          'Виджет, который не может менять состояние',
+          'Виджет для анимации',
+          'Виджет для работы с сетью'
+        ],
+        'correct': 1,
+      },
+      {
+        'question': 'Какая функция вызывается при создании StatefulWidget?',
+        'options': ['build()', 'createState()', 'initState()', 'dispose()'],
+        'correct': 2,
+      },
+      {
+        'question': 'Что такое Hot Reload в Flutter?',
+        'options': [
+          'Перезагрузка приложения с сохранением состояния',
+          'Полная перезагрузка приложения',
+          'Обновление зависимостей',
+          'Очистка кэша'
+        ],
+        'correct': 0,
+      },
+    ];
+    _questions.shuffle(Random());
+  }
+
+  void _selectAnswer(int index) {
+    if (_answered) return;
+
+    if (index == _questions[_currentQuestion]['correct']) {
+      _score++;
+    }
+
+    setState(() {
+      _answered = true;
+    });
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (_currentQuestion < _questions.length - 1) {
+        setState(() {
+          _currentQuestion++;
+          _answered = false;
+        });
+      } else {
+        setState(() {
+          _showResult = true;
+        });
+      }
+    });
+  }
+
+  void _restart() {
+    setState(() {
+      _initQuestions();
+      _currentQuestion = 0;
+      _score = 0;
+      _answered = false;
+      _showResult = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_showResult) {
+      widget.onFinish(_score);
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Результат'),
+          centerTitle: true,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                _score == _questions.length
+                    ? Icons.emoji_events
+                    : _score > _questions.length / 2
+                        ? Icons.sentiment_satisfied
+                        : Icons.sentiment_dissatisfied,
+                size: 100,
+                color: _score == _questions.length
+                    ? const Color.fromARGB(255, 0, 32, 19)
+                    : _score > _questions.length / 2
+                        ? Colors.green
+                        : const Color.fromARGB(255, 241, 244, 54),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                '$_score из ${_questions.length}',
+                style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _score == _questions.length
+                    ? ' Ты настоящий эксперт'
+                    : _score > _questions.length / 2
+                        ? ' Можешь лучше '
+                        : 'Попробуй ещё раз',
+                style: const TextStyle(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: _restart,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                ),
+                child: const Text(
+                  'Играть снова',
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('На главную'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final question = _questions[_currentQuestion];
+    final options = List<String>.from(question['options']);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Вопрос ${_currentQuestion + 1}/${_questions.length}'),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Выйти из викторины?'),
+                content: const Text('Ваш прогресс будет потерян'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Отмена'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Выйти'),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+      body: IgnorePointer(
+        ignoring: _answered,
+        child: AnimatedOpacity(
+          opacity: _answered ? 0.5 : 1.0,
+          duration: const Duration(milliseconds: 200),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    question['question'],
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                ...options.asMap().entries.map((entry) {
+                  int idx = entry.key;
+                  String option = entry.value;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: ElevatedButton(
+                      onPressed: () => _selectAnswer(idx),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.all(16.0),
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color.fromARGB(255, 240, 114, 162),
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: Colors.blue.shade200),
+                        ),
+                      ),
+                      child: Text(
+                        option,
+                        style: const TextStyle(fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
