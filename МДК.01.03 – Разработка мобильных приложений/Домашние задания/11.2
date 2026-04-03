@@ -1,0 +1,87 @@
+import 'package:flutter/material.dart';
+import 'package:getwidget/getwidget.dart'; // для GFToast
+
+class TextInputWidget extends StatefulWidget {
+  @override
+  _TextInputWidgetState createState() => _TextInputWidgetState();
+}
+
+class _TextInputWidgetState extends State<TextInputWidget> {
+  late TextEditingController _nameController;
+  String _displayName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  void _showName() {
+    setState(() {
+      _displayName = _nameController.text;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Введённое имя: ${_nameController.text}'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+
+    GFToast.showToast(
+      'Имя: ${_nameController.text}',
+      context,
+      toastPosition: GFToastPosition.BOTTOM,
+      duration: Duration(seconds: 2),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Ввод текста'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Введите ваше имя',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person),
+              ),
+              onSubmitted: (value) {
+                _showName();
+              },
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _showName,
+              child: Text('Показать имя'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(double.infinity, 50),
+              ),
+            ),
+            SizedBox(height: 30),
+            Text(
+              _displayName.isEmpty
+                  ? 'Имя будет показано здесь'
+                  : 'Привет, $_displayName',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
