@@ -1,0 +1,71 @@
+#include <iostream>
+#include <string>
+
+class Processor {
+private:
+    std::string model;
+    double frequency; 
+
+public:
+    Processor(const std::string& m, double f) : model(m), frequency(f) {}
+
+    void start() {
+        std::cout << "Processor " << model << " started at " << " GHz" << std::endl;
+    }
+};
+
+class RAM {
+private:
+    int size;
+    std::string type;
+
+public:
+    RAM(int s, const std::string& t) : size(s), type(t) {}
+
+    void start() {
+        std::cout << "RAM " << size << " GB (" << type << ") " << std::endl;
+    }
+};
+
+class GPU {
+private:
+    std::string model;
+    int vram; 
+
+public:
+    GPU(const std::string& m, int v) : model(m), vram(v) {}
+
+    void start() {
+        std::cout << "GPU " << model << " with " << vram << " GB VRAM работает" << std::endl;
+    }
+};
+
+class Computer {
+private:
+    Processor cpu;
+    RAM memory;
+    GPU graphics;
+
+public:
+    Computer(const std::string& cpuModel, double cpuFreq, 
+             int ramSize, const std::string& ramType,
+             const std::string& gpuModel, int gpuVram)
+        : cpu(cpuModel, cpuFreq), 
+          memory(ramSize, ramType), 
+          graphics(gpuModel, gpuVram) {}
+
+    void start() {
+        cpu.start();
+        memory.start();
+        graphics.start();
+        std::cout << "комп работает" << std::endl;
+    }
+};
+
+int main() {
+    Computer myPC("Intel Core i7-12700K", 3.6, 
+                   32, "DDR5",
+                   "NVIDIA RTX 4080", 16);
+
+    return 0;
+}
