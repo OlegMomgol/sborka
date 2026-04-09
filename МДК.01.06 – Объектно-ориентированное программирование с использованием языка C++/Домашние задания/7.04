@@ -1,0 +1,37 @@
+#include <iostream>
+#include <string>
+
+class Teacher {
+private:
+    std::string name;
+
+public:
+    Teacher(const std::string& teacherName) : name(teacherName) {}
+
+    std::string getName() const {
+        return name;
+    }
+};
+
+class Course {
+private:
+    std::string title;
+    const Teacher& teacher;  
+
+public:
+    Course(const std::string& courseTitle, const Teacher& courseTeacher)
+        : title(courseTitle), teacher(courseTeacher) {}
+
+    void printInfo() const {
+        std::cout << "Курс: " << title << std::endl;
+        std::cout << "Преподаватель: " << teacher.getName() << std::endl;
+    }
+};
+
+int main() {
+    Teacher teacher("******** ****** ****");
+    Course course("Программирование на C++", teacher);
+    course.printInfo();
+
+    return 0;
+}
