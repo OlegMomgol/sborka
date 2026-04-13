@@ -1,0 +1,87 @@
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Диалоговые окна',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const MainScreen(),
+    );
+  }
+}
+
+class MainScreen extends StatelessWidget {
+  const MainScreen({super.key});
+
+  Future<void> _showAlertDialog(BuildContext context) async {
+    final bool? result = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Подтверждение'),
+          content: const Text('Вы уверены?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false), 
+              child: const Text('Нет'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true), 
+              child: const Text('Да'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null) {
+      String message;
+      Color toastColor;
+
+      if (result == true) {
+        message = 'Вы выбрали ДА';
+        toastColor = Colors.green;
+      } else {
+        message = 'Вы выбрали НЕТ';
+        toastColor = Colors.red;
+      }
+
+      Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: toastColor,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Диалоговые окна'),
+        centerTitle: true,
+      ),
+      body: Center(
+
+        child: ElevatedButton(
+          onPressed: () => _showAlertDialog(context),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          ),
+          child: const Text('Показать диалоговое окно'),
+        ),
+      ),
+    );
+  }
+}
