@@ -1,0 +1,115 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+class Employee {
+protected:
+    string name;
+    double salary;
+    
+public:
+    Employee(const string& name, double salary) : name(name), salary(salary) {}
+    
+    virtual ~Employee() {}
+    
+    virtual void work() const {
+        cout << name << " работает над общими задачами" << endl;
+    }
+    
+    void getInfo() const {
+        cout << "Сотрудник: " << name << ", Зарплата: " << salary << " руб." << endl;
+    }
+    
+    string getName() const { return name; }
+    double getSalary() const { return salary; }
+};
+
+class Manager : public Employee {
+private:
+    int teamSize;
+    
+public:
+    Manager(const string& name, double salary, int teamSize) 
+        : Employee(name, salary), teamSize(teamSize) {}
+    
+    void work() const override {
+        cout << name << " (Менеджер) управляет командой из " << teamSize << " человек" << endl;
+    }
+    
+    void manage() const {
+        cout << name << " проводит планерку и распределяет задачи" << endl;
+    }
+    
+    void conductMeeting() const {
+        cout << name << " проводит совещание с командой" << endl;
+    }
+    
+    int getTeamSize() const { return teamSize; }
+};
+
+class Developer : public Employee {
+private:
+    string programmingLanguage;
+    
+public:
+    Developer(const string& name, double salary, const string& programmingLanguage)
+        : Employee(name, salary), programmingLanguage(programmingLanguage) {}
+  
+    void work() const override {
+        cout << name << " (Разработчик) пишет код на " << programmingLanguage << endl;
+    }
+
+    void code() const {
+        cout << name << " пишет функцию на " << programmingLanguage << endl;
+    }
+    
+    void debug() const {
+        cout << name << " отлаживает код и исправляет ошибки" << endl;
+    }
+    
+    string getProgrammingLanguage() const { return programmingLanguage; }
+};
+
+void demonstratePolymorphism(Employee* emp) {
+    emp->work();
+}
+
+int main() {
+    setlocale(LC_ALL, "Ru");
+  
+    Employee* emp1 = new Employee("Влад Морозов", 30000);
+    Manager* mgr1 = new Manager("Анна Сидорова", 45000);
+    Developer* dev1 = new Developer("Сергей ", 70000);
+    
+    cout << " Демонстрация работы " << endl;
+    emp1->work();
+    mgr1->work();
+    dev1->work();
+    
+    cout << "\n Методы " << endl;
+    mgr1->manage();
+    mgr1->conductMeeting();
+    
+    dev1->code();
+    dev1->debug();
+    
+    cout << "\n Информация о сотрудниках " << endl;
+    emp1->getInfo();
+    mgr1->getInfo();
+    dev1->getInfo();
+    
+    cout << "\n Демонстрация" << endl;
+    cout << "Через указатель на базовый класс:" << endl;
+    Employee* employees[] = {emp1, mgr1, dev1};
+    
+    for (int i = 0; i < 3; i++) {
+        employees[i]->work();
+    }
+
+    delete emp1;
+    delete mgr1;
+    delete dev1;
+    
+    return 0;
+}
