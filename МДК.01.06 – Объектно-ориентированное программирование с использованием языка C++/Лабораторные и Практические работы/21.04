@@ -1,0 +1,204 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <string>
+
+using namespace std;
+
+class Track {
+protected:
+    string title;
+    int duration; 
+
+public:
+    Track(string title, int duration) {
+        this->title = title;
+        this->duration = duration;
+    }
+
+    virtual void play() {
+        cout << "Играет трек: " << title << endl;
+    }
+
+    int getDuration() const {
+        return duration;
+    }
+
+    string getTitle() const {
+        return title;
+    }
+
+    virtual ~Track() {} 
+};
+
+class Song : public Track {
+private:
+    string artist;
+
+public:
+    Song(string title, int duration, string artist)
+        : Track(title, duration) {
+        this->artist = artist;
+    }
+
+    void play() override {
+        cout << "Играет песня: " << title << " - " << artist << endl;
+    }
+};
+
+class Instrumental : public Track {
+private:
+    string instrument;
+
+public:
+    Instrumental(string title, int duration, string instrument)
+        : Track(title, duration) {
+        this->instrument = instrument;
+    }
+
+    void play() override {
+        cout << "Играет инструментал: " << title << " (" << instrument << ")" << endl;
+    }
+};
+
+class Podcast : public Track {
+private:
+    string host; 
+
+public:
+    Podcast(string title, int duration, string host)
+        : Track(title, duration) {
+        this->host = host;
+    }
+
+    void play() override {
+        cout << "Играет подкаст: " << title << " - ведущий " << host << endl;
+    }
+};
+
+bool compareByDuration(const Track* a, const Track* b) {
+    return a->getDuration() < b->getDuration();
+}
+
+bool compareByTitle(const Track* a, const Track* b) {
+    return a->getTitle() < b->getTitle();
+}
+
+void showMenu() {
+    cout << "\n Коталог" << endl;
+    cout << "1. Добавить песню (Song)" << endl;
+    cout << "2. Добавить инструментал (Instrumental)" << endl;
+    cout << "3. Добавить подкаст (Podcast)" << endl;
+    cout << "4. Показать все треки" << endl;
+    cout << "5. Сортировать по длительности" << endl;
+    cout << "6. Сортировать по названию" << endl;
+    cout << "7. Воспроизвести все треки" << endl;
+    cout << "0. Выход" << endl;
+    cout << "Ваш выбор: ";
+}
+
+int main() {
+    vector<Track*> catalog; 
+    int choice;
+
+    do {
+        showMenu();
+        cin >> choice;
+        cin.ignore(); 
+
+        switch (choice) {
+        case 1: {
+            string title, artist;
+            int duration;
+            cout << "Название песни: ";
+            getline(cin, title);
+            cout << "Исполнитель: ";
+            getline(cin, artist);
+            cout << "Длительность (сек): ";
+            cin >> duration;
+            catalog.push_back(new Song(title, duration, artist));
+            cout << "Песня добавлена!" << endl;
+            break;
+        }
+        case 2: {
+            string title, instrument;
+            int duration;
+            cout << "Название инструментала: ";
+            getline(cin, title);
+            cout << "Инструмент: ";
+            getline(cin, instrument);
+            cout << "Длительность (сек): ";
+            cin >> duration;
+            catalog.push_back(new Instrumental(title, duration, instrument));
+            cout << "Инструментал добавлен!" << endl;
+            break;
+        }
+        case 3: {
+            string title, host;
+            int duration;
+            cout << "Название подкаста: ";
+            getline(cin, title);
+            cout << "Ведущий: ";
+            getline(cin, host);
+            cout << "Длительность (сек): ";
+            cin >> duration;
+            catalog.push_back(new Podcast(title, duration, host));
+            cout << "Подкаст добавлен!" << endl;
+            break;
+        }
+        case 4: {
+            if (catalog.empty()) {
+                cout << "Каталог пуст!" << endl;
+            } else {
+                cout << "\n Список треков" << endl;
+                for (size_t i = 0; i < catalog.size(); i++) {
+                    cout << i + 1 << ". ";
+                    catalog[i]->play();
+                }
+            }
+            break;
+        }
+        case 5: {
+            if (catalog.empty()) {
+                cout << "Нет треков для сортировки!" << endl;
+            } else {
+                sort(catalog.begin(), catalog.end(), compareByDuration);
+                cout << "Треки отсортированы по длительности!" << endl;
+            }
+            break;
+        }
+        case 6: {
+            if (catalog.empty()) {
+                cout << "Нет треков для сортировки!" << endl;
+            } else {
+                sort(catalog.begin(), catalog.end(), compareByTitle);
+                cout << "Треки отсортированы по названию!" << endl;
+            }
+            break;
+        }
+        case 7: {
+            if (catalog.empty()) {
+                cout << "Нет треков для воспроизведения!" << endl;
+            } else {
+                cout << "\n Воспроизведение" << endl;
+                for (auto track : catalog) {
+                    track->play();
+                }
+            }
+            break;
+        }
+        case 0:
+            cout << "Выход из программы" << endl;
+            break;
+        default:
+            cout << "Неверно, попробуйте снова." << endl;
+        }
+    } while (choice != 0);
+
+    for (auto track : catalog) {
+        delete track;
+    }
+    catalog.clear();
+
+    return 0;
+}
