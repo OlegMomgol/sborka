@@ -1,0 +1,70 @@
+#include <iostream>
+#include <string>
+
+class Character {
+protected:
+    std::string name;
+
+public:
+    Character(const std::string& n) : name(n) {
+        std::cout << "Character " << name << " created.\n";
+    }
+
+    virtual void attack() const {
+        std::cout << name << " attacks with bare hands!\n";
+    }
+
+    virtual ~Character() {
+        std::cout << "Character " << name << " destroyed.\n";
+    }
+};
+
+class Warrior : public Character {
+public:
+    Warrior(const std::string& n) : Character(n) {
+        std::cout << "Warrior " << name << " is ready for battle.\n";
+    }
+    void attack() const override {
+        std::cout << name << " swings a mighty sword!\n";
+    }
+
+    void slash() const {
+        std::cout << name << " performs a deadly slash!\n";
+    }
+};
+
+class Mage : public Character {
+public:
+    Mage(const std::string& n) : Character(n) {
+        std::cout << "Mage " << name << " channels arcane energy.\n";
+    }
+
+    void attack() const override {
+        std::cout << name << " casts a fireball!\n";
+    }
+
+    void castSpell() const {
+        std::cout << name << " casts a lightning bolt!\n";
+    }
+};
+
+int main() {
+    Warrior w("Conan");
+    Mage m("Gandalf");
+
+    std::cout << "\n Attacks \n";
+    w.attack();
+    m.attack();
+
+    std::cout << "\n Unique abilities \n";
+    w.slash();
+    m.castSpell();
+
+    std::cout << "\n Polymorphism \n";
+    Character* c1 = &w;
+    Character* c2 = &m;
+    c1->attack();
+    c2->attack();
+
+    return 0;
+}
