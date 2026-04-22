@@ -1,0 +1,51 @@
+#include <iostream>
+#include <string>
+
+class Device {
+public:
+    virtual void turnOn() {
+        std::cout << "Device: ON\n";
+    }
+    virtual void turnOff() {
+        std::cout << "Device: OFF\n";
+    }
+};
+
+class Light : public Device {
+public:
+    void turnOn() override {
+        std::cout << "Light: освещение включено\n";
+    }
+    void turnOff() override {
+        std::cout << "Light: освещение выключено\n";
+    }
+};
+
+class Thermostat : private Device {
+public:
+    void turnOn() override {
+        std::cout << "Thermostat: нагрев включён\n";
+        Device::turnOn();
+    }
+    void turnOff() override {
+        std::cout << "Thermostat: нагрев выключен\n";
+        Device::turnOff();
+    }
+
+    void powerOn() {
+        Device::turnOn();
+    }
+};
+
+int main() {
+    std::cout << " Public наследование \n";
+    Light lamp;
+    lamp.turnOn();   
+    lamp.turnOff();  
+
+    std::cout << "\n Private наследование \n";
+    Thermostat thermo;
+    thermo.powerOn();   
+
+    return 0;
+}
