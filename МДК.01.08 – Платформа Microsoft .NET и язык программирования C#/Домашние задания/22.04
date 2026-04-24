@@ -1,0 +1,213 @@
+using System;
+abstract class Delivery
+{
+    public string Address { get; set; }
+    public string Recipient { get; set; }
+    
+    public abstract int BaseCost { get; } 
+    public abstract DateTime SendDateTime { get; set; } 
+    
+    public abstract double CalculateCost(double weight);
+    public abstract TimeSpan GetDeliveryTime(double distance);
+    
+    public DateTime GetDeliveryDate()
+    {
+        return SendDateTime.Add(GetDeliveryTime(0));
+    }
+    
+    public void ShowInfo(double weight, double distance)
+    {
+        Console.WriteLine($"\n Информация о доставке ");
+        Console.WriteLine($"Получатель: {Recipient}");
+        Console.WriteLine($"Адрес: {Address}");
+        Console.WriteLine($"Дата отправки: {SendDateTime:dd.MM.yyyy}");
+        Console.WriteLine($"Вес груза: {weight} кг");
+        Console.WriteLine($"Стоимость доставки: {CalculateCost(weight):C}");
+        Console.WriteLine($"Дата получения: {GetDeliveryDate():dd.MM.yyyy}");
+    }
+}
+
+class HomeDelivery : Delivery
+{
+    public override int BaseCost => 100; 
+    public override DateTime SendDateTime { get; set; }
+    
+    public double Distance { get; set; }
+    
+    public override double CalculateCost(double weight)
+    {
+        return (BaseCost * weight) + (Distance * 50);
+    }
+    
+    public override TimeSpan GetDeliveryTime(double distance)
+    {
+        int days = (int)(Distance / 50) + 1; 
+        return TimeSpan.FromDays(days);
+    }
+}
+
+class PickPointDelivery : Delivery
+{
+    public override int BaseCost => 80; 
+    public override DateTime SendDateTime { get; set; }
+    
+    private int fixedCost = 200; 
+    
+    public override double CalculateCost(double weight)
+    {
+        return fixedCost + (BaseCost * weight);
+    }
+    
+    public override TimeSpan GetDeliveryTime(double distance)
+    {
+        return TimeSpan.FromDays(3);
+    }
+}
+
+class ExpressDelivery : Delivery
+{
+    public override int BaseCost => 150; 
+    public override DateTime SendDateTime { get; set; }
+    
+    public double Distance { get; set; }
+    private double baseRate = 100; 
+    
+    public override double CalculateCost(double weight)
+    {
+        return (baseRate * weight + Distance * 50) * 2;
+    }
+    
+    public override TimeSpan GetDeliveryTime(double distance)
+    {
+        int normalDays = (int)(distance / 50) + 1;
+        return TimeSpan.FromDays(normalDays / 3.0);
+    }
+}
+
+interface IDeliveryUserInterface
+{
+    Delivery CreateDelivery();
+    void Run();
+}
+
+class DeliveryConsoleInterface : IDeliveryUserInterface
+{
+    public void Run()
+    {
+        Console.WriteLine(" Система доставки \n");
+        
+        while (true)
+        {
+            Console.WriteLine("Выберите тип доставки:");
+            Console.WriteLine("1 - Доставка на дом");
+            Console.WriteLine("2 - Доставка в пункт выдачи");
+            Console.WriteLine("3 - Экспресс доставка");
+            Console.WriteLine("0 - Выход");
+            Console.Write("Ваш выбор: ");
+            
+            string choice = Console.ReadLine();
+            
+            if (choice == "0") break;
+            
+            Delivery delivery = CreateDeliveryByChoice(choice);
+            if (delivery != null)
+            {
+                Console.Write("Введите вес груза (кг): ");
+                double weight = double.Parse(Console.ReadLine());
+                
+                if (delivery is HomeDelivery || delivery is ExpressDelivery)
+                {
+                    Console.Write("Введите расстояние (км): ");
+                    double distance = double.Parse(Console.ReadLine());
+                    if (delivery is HomeDelivery)
+                        ((HomeDelivery)delivery).Distance = distance;
+                    else
+                        ((ExpressDelivery)delivery).Distance = distance;
+                }
+                
+                delivery.ShowInfo(weight, 0);
+                Console.WriteLine("\n Нажмите любую клавишу для продолжения ");
+                Console.ReadKey();
+                Console.Clear();
+            }
+        }
+        
+        Console.WriteLine("Спасибо за использование системы доставки ");
+    }
+    
+    private Delivery CreateDeliveryByChoice(string choice)
+    {
+        Console.Write("Введите адрес: ");
+        string address = Console.ReadLine();
+        Console.Write("Введите имя получателя: ");
+        string recipient = Console.ReadLine();
+        Console.Write("Введите дату отправки (день.месяц.год): ");
+        DateTime sendDate = DateTime.Parse(Console.ReadLine());
+        
+        Delivery delivery = null;
+        
+        switch (choice)
+        {
+            case "1":
+                delivery = new HomeDelivery();
+                break;
+            case "2":
+                delivery = new PickPointDelivery();
+                break;
+            case "3":
+                delivery = new ExpressDelivery();
+                break;
+            default:
+                Console.WriteLine("Неверный выбор");
+                return null;
+        }
+        
+        delivery.Address = address;
+        delivery.Recipient = recipient;
+        delivery.SendDateTime = sendDate;
+        
+        return delivery;
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+
+        IDeliveryUserInterface ui = new DeliveryConsoleInterface();
+        ui.Run();
+
+        Console.Clear();
+        Console.WriteLine(" Демонстрация разных типов доставок \n");
+        
+        HomeDelivery homeDelivery = new HomeDelivery
+        {
+            Address = "ул. Ленина, д. 10",
+            Recipient = "Иван Иванов",
+            SendDateTime = DateTime.Now,
+            Distance = 120
+        };
+        homeDelivery.ShowInfo(5, 0);
+        
+        PickPointDelivery pickPointDelivery = new PickPointDelivery
+        {
+            Address = "ТЦ Сезон, 2 этаж",
+            Recipient = "Мария Александровна",
+            SendDateTime = DateTime.Now
+        };
+        pickPointDelivery.ShowInfo(3, 0);
+        
+        ExpressDelivery expressDelivery = new ExpressDelivery
+        {
+            Address = "ул. Ленина, 6",
+            Recipient = "*********",
+            SendDateTime = DateTime.Now,
+            Distance = 200
+        };
+        expressDelivery.ShowInfo(4, 0);
+        
+        Console.ReadKey();
+    }
+}
