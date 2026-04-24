@@ -1,0 +1,118 @@
+using System;
+abstract class BankAccount
+{
+    public string AccountNumber { get; set; }
+    public decimal Balance { get; protected set; }
+
+    public BankAccount(string accountNumber, decimal initialBalance)
+    {
+        AccountNumber = accountNumber;
+        Balance = initialBalance;
+    }
+
+    public void Deposit(int amount)
+    {
+        if (amount > 0)
+        {
+            Balance += amount;
+            Console.WriteLine($"Пополнение на {amount} руб. Новый баланс: {Balance} руб.");
+        }
+        else
+        {
+            Console.WriteLine("Сумма пополнения должна быть положительной");
+        }
+    }
+
+    public abstract void Withdraw(int amount);
+
+    public void DisplayBalance()
+    {
+        Console.WriteLine($"Счет {AccountNumber}. Баланс: {Balance} руб.");
+    }
+}
+
+class SavingsAccount : BankAccount
+{
+    private decimal minBalance = 0;
+
+    public SavingsAccount(string accountNumber, decimal initialBalance) : base(accountNumber, initialBalance) { }
+
+    public override void Withdraw(int amount)
+    {
+        if (amount > 0 && Balance - amount >= minBalance)
+        {
+            Balance -= amount;
+            Console.WriteLine($"Снято {amount} руб. Новый баланс: {Balance} руб.");
+        }
+        else
+        {
+            Console.WriteLine($"Ошибка! Недостаточно средств. Баланс: {Balance} руб.");
+        }
+    }
+}
+
+class CheckingAccount : BankAccount
+{
+    private decimal commission = 30;
+
+    public CheckingAccount(string accountNumber, decimal initialBalance) : base(accountNumber, initialBalance) { }
+
+    public override void Withdraw(int amount)
+    {
+        decimal totalWithdraw = amount + commission;
+        if (amount > 0 && Balance >= totalWithdraw)
+        {
+            Balance -= totalWithdraw;
+            Console.WriteLine($"Снято {amount} руб. Комиссия: {commission} руб. Новый баланс: {Balance} руб.");
+        }
+        else
+        {
+            Console.WriteLine($"Ошибка! Недостаточно средств для снятия {amount} руб. + комиссия {commission} руб.");
+        }
+    }
+}
+
+class CreditAccount : BankAccount
+{
+    private decimal creditLimit = -5000;
+
+    public CreditAccount(string accountNumber, decimal initialBalance) : base(accountNumber, initialBalance) { }
+
+    public override void Withdraw(int amount)
+    {
+        if (amount > 0 && Balance - amount >= creditLimit)
+        {
+            Balance -= amount;
+            Console.WriteLine($"Снято {amount} руб. Новый баланс: {Balance} руб.");
+        }
+        else
+        {
+            Console.WriteLine($"Ошибка! Превышен кредитный лимит {creditLimit} руб. Баланс: {Balance} руб.");
+        }
+    }
+
+class Program
+{
+    static void Main()
+    {
+        Console.WriteLine(" Сберегательный счет ");
+        SavingsAccount savings = new SavingsAccount("SAV001", 1000);
+        savings.DisplayBalance();
+        savings.Deposit(500);
+        savings.Withdraw(200);
+        savings.Withdraw(1500); 
+
+        Console.WriteLine("\n Расчетный счет ");
+        CheckingAccount checking = new CheckingAccount("CHK001", 1000);
+        checking.DisplayBalance();
+        checking.Deposit(300);
+        checking.Withdraw(200);  
+        checking.Withdraw(900);  
+
+        Console.WriteLine("\n Кредитный счет ");
+        CreditAccount credit = new CreditAccount("CRD001", 1000);
+        credit.DisplayBalance();
+        credit.Withdraw(2000);
+        credit.DisplayBalance();
+    }
+}
