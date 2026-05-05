@@ -1,0 +1,86 @@
+import 'package:flutter/material.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+  
+  @override
+  Widget build(BuildContext context) => const MaterialApp(
+    home: CounterScreen(),
+    debugShowCheckedModeBanner: false, //  убираем "debug"
+  );
+}
+
+class CounterScreen extends StatefulWidget {
+  const CounterScreen({super.key});
+  
+  @override
+  State<CounterScreen> createState() => _CounterScreenState();
+}
+
+class _CounterScreenState extends State<CounterScreen> {
+  int _count = 0;
+  List<String> _log = [];
+
+  void _add() {
+    setState(() {
+      _count++;
+      _log.add('Click ${_count}');
+    });
+  }
+
+  void _reset() {
+    setState(() {
+      _count = 0;
+      _log.clear();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Счётчик')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '$_count',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _log.length,
+                itemBuilder: (context, index) => Text(_log[index]),
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: _reset,
+            child: const Icon(Icons.refresh),
+          ),
+          const SizedBox(width: 8),
+          FloatingActionButton(
+            onPressed: _add,
+            child: const Icon(Icons.add),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+//Ответы на вопросы
+// 1. Из ошибок были логические (в строке _log.add('Wlar${count}') использовалась переменная count, которая не обновлялась (в коде увеличивался _count, а в лог попадало старое/неверное значение) 
+и синтаксические ошибки (voidmain(), setstate(), MainAxisAligment, неправильный itemBuilder)
+//2. Из-за несогласованности имён переменных: объявили int count = 0, но в setState писали _count++. Плюс опечатка в слове "Click" → "Wlar".
+//3. Переименовала всё в _count и _log, setState сначала _count++, потом _log.add('Click $_count')
+теперь работает в лог идёт актуальное значение счётчика после увеличения, имена переменных не противоречат друг другу
