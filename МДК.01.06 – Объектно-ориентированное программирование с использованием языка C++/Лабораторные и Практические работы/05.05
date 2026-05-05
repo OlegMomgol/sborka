@@ -1,0 +1,50 @@
+#include <iostream>
+#include <vector>
+#include <memory> 
+
+
+class Ability {
+public:
+    virtual void use() = 0; 
+    virtual ~Ability() {}
+};
+
+
+class Fireball : public Ability {
+public:
+    void use() override {
+        std::cout << "Нанесён урон огнём" << std::endl;
+    }
+};
+
+class Heal : public Ability {
+public:
+    void use() override {
+        std::cout << "Восстановлено здоровье" << std::endl;
+    }
+};
+
+class Shield : public Ability {
+public:
+    void use() override {
+        std::cout << "Активирован щит" << std::endl;
+    }
+};
+
+int main() {
+    std::vector<Ability*> abilities;
+
+    abilities.push_back(new Fireball());
+    abilities.push_back(new Heal());
+    abilities.push_back(new Shield());
+
+    for (Ability* ability : abilities) {
+        ability->use();
+    }
+
+    for (Ability* ability : abilities) {
+        delete ability;
+    }
+
+    return 0;
+}
