@@ -1,0 +1,145 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <filesystem>
+#include <stdexcept>
+
+namespace fs = std::filesystem;
+
+class FileWrapper {
+private:
+    std::string file_path;
+    std::string filename;
+    std::string directory;
+    std::string class_name;
+    std::string method_name;
+
+public:
+    FileWrapper(const std::string& file_path) 
+        : file_path(file_path)
+        , class_name("FileWrapper")
+        , method_name("")
+    {
+        fs::path path(file_path);
+        this->filename = path.filename().string();
+        this->directory = path.parent_path().string();
+        
+        if (this->directory.empty()) {
+            this->directory = ".";
+        }
+    }
+
+    std::string open() {
+        if (!fs::exists(directory)) {
+            throw std::runtime_error("Директория " + directory + " не найдена");
+        }
+        
+        if (!fs::exists(file_path)) {
+            throw std::runtime_error("Файл " + file_path + " не найден");
+        }
+        
+        std::ifstream file(file_path);
+        if (!file.is_open()) {
+            throw std::runtime_error("Не удалось открыть файл " + file_path);
+        }
+        
+        std::string content;
+        std::string line;
+        while (std::getline(file, line)) {
+            content += line + "\n";
+        }
+        
+        file.close();
+        return content;
+    }
+
+    void close() {
+        if (!fs::exists(directory)) {
+            throw std::runtime_error("Директория " + directory + " не найдена");
+        }
+        
+        if (!fs::exists(file_path)) {
+            throw std::runtime_error("Файл " + file_path + " не найден");
+        }
+        
+        std::ofstream file(file_path, std::ios::trunc);
+        if (!file.is_open()) {
+            throw std::runtime_error("Не удалось открыть файл для очистки");
+        }
+        
+        file << "";
+        file.close();
+    }
+
+    void setFilename(const std::string& new_filename) {
+        this->filename = new_filename;
+        fs::path new_path = fs::path(directory) / new_filename;
+        this->file_path = new_path.string();
+    }
+
+    void setDirectory(const std::string& new_directory) {
+        this->directory = new_directory;
+        fs::path new_path = fs::path(new_directory) / filename;
+        this->file_path = new_path.string();
+    }
+
+    void setClassName(const std::string& name) {
+        this->class_name = name;
+    }
+
+    void setMethodName(const std::string& name) {
+        this->method_name = name;
+    }
+
+    std::string getFilePath() const { return file_path; }
+    std::string getFilename() const { return filename; }
+    std::string getDirectory() const { return directory; }
+    std::string getClassName() const { return class_name; }
+    std::string getMethodName() const { return method_name; }
+
+    void write(const std::string& content) {
+        if (!fs::exists(directory)) {
+            fs::create_directories(directory);
+        }
+        
+        std::ofstream file(file_path);
+        if (!file.is_open()) {
+            throw std::runtime_error("Не удалось открыть файл для записи");
+        }
+        
+        file << content;
+        file.close();
+    }
+
+    bool exists() const {
+        return fs::exists(file_path);
+    }
+};
+
+int main() {
+    try {
+        FileWrapper file("test.txt");
+        
+        std::cout << "Имя файла: " << file.getFilename() << std::endl;
+        std::cout << "Директория: " << file.getDirectory() << std::endl;
+        std::cout << "Класс: " << file.getClassName() << std::endl;
+        
+        file.write("Hello, World!\nЭто тестовый файл.\n");
+        
+        std::string content = file.open();
+        std::cout << "\nСодержимое файла:\n" << content;
+        
+        file.setFilename("new_test.txt");
+        std::cout << "\nНовый путь к файлу: " << file.getFilePath() << std::endl;
+        
+        file.close();
+        std::cout << "Файл очищен" << std::endl;
+        
+        std::cout << "Файл существует: " << (file.exists() ? "да" : "нет") << std::endl;
+        
+    } catch (const std::exception& e) {
+        std::cerr << "Ошибка: " << e.what() << std::endl;
+    }
+    
+    return 0;
+}
