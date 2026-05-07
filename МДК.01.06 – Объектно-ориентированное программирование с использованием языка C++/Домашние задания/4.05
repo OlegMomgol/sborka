@@ -73,13 +73,13 @@ public:
 
     void setFilename(const std::string& new_filename) {
         this->filename = new_filename;
-        fs::path new_path = fs::path(directory) / new_filename;
+        fs::path new_path = fs::path(directory) 
         this->file_path = new_path.string();
     }
 
     void setDirectory(const std::string& new_directory) {
         this->directory = new_directory;
-        fs::path new_path = fs::path(new_directory) / filename;
+        fs::path new_path = fs::path(new_directory) 
         this->file_path = new_path.string();
     }
 
