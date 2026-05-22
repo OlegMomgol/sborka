@@ -1,0 +1,233 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Финансовые проблемы',
+      themeMode: ThemeMode.dark,
+      darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.green,
+          brightness: Brightness.dark,
+        ),
+      ),
+      home: const ExpensesScreen(),
+    );
+  }
+}
+
+class Expense {
+  final String title;
+  final double value;  
+
+  Expense({required this.title, required this.value});
+}
+
+class ExpensesScreen extends StatefulWidget {
+  const ExpensesScreen({super.key});
+
+  @override
+  State<ExpensesScreen> createState() => _ExpensesScreenState();
+}
+
+class _ExpensesScreenState extends State<ExpensesScreen> {
+  final List<Expense> _expenses = [];
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController();
+
+  double get _totalAmount {
+    return _expenses.fold(0, (sum, expense) => sum + expense.value);
+  }
+
+  void _addExpense() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Новые расходы'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Название',
+                  border: OutlineInputBorder(),
+                ),
+                autofocus: true,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _amountController,
+                decoration: const InputDecoration(
+                  labelText: 'Сумма потраченного',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                _clearControllers();
+                Navigator.of(context).pop();
+              },
+              child: const Text('Отмена'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _validateAndSave(context);
+              },
+              child: const Text('Сохранить'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _validateAndSave(BuildContext dialogContext) {
+  final title = _titleController.text.trim();
+  final amountText = _amountController.text.trim();
+
+  if (title.isEmpty) {
+    _showErrorDialog(dialogContext, 'Ошибка', 'Название не может быть пустым');
+    return;
+  }
+
+  double amountValue; 
+  
+  try {
+    amountValue = double.parse(amountText);
+    if (amountValue < 0) throw FormatException();
+  } catch (e) {
+    _showErrorDialog(dialogContext, 'Ошибка', 'Введите корректную сумму (цифры, целую или дробную)');
+    return;
+  }
+
+
+  Navigator.pop(dialogContext);
+
+  setState(() {
+    _expenses.add(Expense(title: title, value: amountValue));
+  });
+
+  _clearControllers();
+}
+
+  void _showErrorDialog(BuildContext context, String errorTitle, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(errorTitle),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteExpense(int index) {
+    setState(() {
+      _expenses.removeAt(index);
+    });
+  }
+
+  void _clearControllers() {
+    _titleController.clear();
+    _amountController.clear();
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Финансовые проблемы'),
+        centerTitle: true,
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: _expenses.isEmpty
+                ? const Center(
+                    child: Text(
+                      'Нет записей',
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _expenses.length,
+                    itemBuilder: (context, index) {
+                      final expense = _expenses[index];
+                      return Dismissible(
+                        key: Key(expense.title + expense.value.toString()),
+                        direction: DismissDirection.endToStart,
+                        onDismissed: (_) => _deleteExpense(index),
+                        background: Container(
+                          color: Colors.red,
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 20),
+                          child: const Icon(Icons.delete, color: Colors.white),
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.receipt),
+                          title: Text(expense.title),
+                          trailing: Text(
+                            '${expense.value.toStringAsFixed(2)} ₽',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              border: const Border(
+                top: BorderSide(color: Colors.grey, width: 0.5),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Итого:',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  '${_totalAmount.toStringAsFixed(2)} ₽',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addExpense,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
