@@ -1,0 +1,37 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <chrono>
+#include <random>
+
+int main() {
+    const int N = 1000000;
+    std::vector<int> vec(N);
+    
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(1, N);
+    
+    for (int i = 0; i < N; ++i) {
+        vec[i] = dis(gen);
+    }
+
+    auto start = std::chrono::high_resolution_clock::now();
+    std::reverse(vec.begin(), vec.end());
+    auto end = std::chrono::high_resolution_clock::now();
+    auto reverse_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    
+    std::shuffle(vec.begin(), vec.end(), gen);
+    
+    start = std::chrono::high_resolution_clock::now();
+    std::sort(vec.begin(), vec.end());
+    end = std::chrono::high_resolution_clock::now();
+    auto sort_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+    std::cout << "Reverse время: " << reverse_time.count() << " мс" << std::endl;
+    std::cout << "Sort время: " << sort_time.count() << " мс" << std::endl;
+    std::cout << "\nReverse быстрее в " << (float)sort_time.count() / reverse_time.count() << " раз" << std::endl;
+    std::cout << "\nВывод: Reverse быстрее, т.к. имеет сложность O(n), а Sort - O(n log n)" << std::endl;
+    
+    return 0;
+}
