@@ -6,7 +6,7 @@ int main() {
     std::ifstream inputFile("data.txt");
     
     if (!inputFile.is_open()) {
-        std::cerr << "Ошибка: Файл data.txt не найден!" << std::endl;
+        std::cerr << "Ошибка: Файл не найден" << std::endl;
         return 1;
     }
     
@@ -24,7 +24,7 @@ int main() {
     
     std::ofstream outputFile("result.txt");
     if (!outputFile.is_open()) {
-        std::cerr << "Ошибка: Не удалось создать файл result.txt!" << std::endl;
+        std::cerr << "Ошибка: Не удалось создать файл" << std::endl;
         return 1;
     }
     
