@@ -1,0 +1,40 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+
+int main() {
+    std::ifstream inputFile("data.txt");
+    
+    if (!inputFile.is_open()) {
+        std::cerr << "Ошибка: Файл data.txt не найден!" << std::endl;
+        return 1;
+    }
+    
+    int lineCount = 0;
+    int charCount = 0;
+    std::string line;
+
+    while (std::getline(inputFile, line)) {
+        lineCount++;
+        charCount += line.length(); 
+        charCount++; 
+    }
+    
+    inputFile.close();
+    
+    std::ofstream outputFile("result.txt");
+    if (!outputFile.is_open()) {
+        std::cerr << "Ошибка: Не удалось создать файл result.txt!" << std::endl;
+        return 1;
+    }
+    
+    outputFile << "Количество строк: " << lineCount << std::endl;
+    outputFile << "Количество символов: " << charCount << std::endl;
+    
+    outputFile.close();
+    
+    std::cout << "Результат сохранен в файл result.txt" << std::endl;
+    std::cout << "Строк: " << lineCount << ", символов: " << charCount << std::endl;
+    
+    return 0;
+}
