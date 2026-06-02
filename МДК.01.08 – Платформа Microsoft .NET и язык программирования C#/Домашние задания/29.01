@@ -1,0 +1,81 @@
+using System;
+
+class Program
+{
+    static void Main()
+    {
+        // 1
+        string[] fru = { "яблоко", "банан", "апельсин", "манго", "виноград" };
+        string udalit = "виноград";
+        string[] novFru = new string[4];
+        int j = 0;
+
+        for (int i = 0; i < 5; i++)
+        {
+            if (fru[i] != udalit)
+            {
+                novFru[j] = fru[i];
+                j++;
+            }
+        }
+        Console.WriteLine("Фрукты после удаления:");
+        foreach (string f in novFru)
+        {
+            Console.WriteLine(f);
+        }
+
+        // 2
+        string[] imena = { "миша", "еж", "яблоня", "шампиньоны", "спасибо" };
+        bool est = false;
+        for (int i = 0; i < 5; i++)
+        {
+            if (imena[i] == "миша")
+            {
+                est = true;
+            }
+        }
+        if (est)
+        {
+            Console.WriteLine("имя найдено");
+        }
+        else
+        {
+            Console.WriteLine("имя не найдено");
+        }
+
+        // 3
+        int[] chisla = { 4, 4, 4, 4, 4 };
+        int summa = 0;
+        for (int i = 0; i < 5; i++)
+        {
+            summa = summa + chisla[i];
+        }
+        Console.WriteLine("сумма: " + summa);
+
+        // 4
+        int[] ch = new int[10];
+        int[] kv = new int[10];
+        int[] kub = new int[10];
+        for (int i = 0; i < 10; i++)
+        {
+            ch[i] = i + 1;
+            kv[i] = ch[i] * ch[i];
+            kub[i] = kv[i] * ch[i];
+        }
+        Console.WriteLine("числа:");
+        foreach (int c in ch)
+        {
+            Console.Write(c + " ");
+        }
+        Console.WriteLine("\nквадраты:");
+        foreach (int k in kv)
+        {
+            Console.Write(k + " ");
+        }
+        Console.WriteLine("\nкубы:");
+        foreach (int ku in kub)
+        {
+            Console.Write(ku + " ");
+        }
+    }
+}
