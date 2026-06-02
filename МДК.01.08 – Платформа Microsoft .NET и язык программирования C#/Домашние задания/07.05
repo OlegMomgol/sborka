@@ -1,0 +1,52 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class Student
+{
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public int Age { get; set; }
+    public double AverageGrade { get; set; }
+
+    public string FullName => $"{LastName} {FirstName}";
+}
+
+class Program
+{
+    static void Main()
+    {
+        List<Student> students = new List<Student>
+        {
+            new Student { FirstName = "Марина", LastName = "Писятина", Age = 56, AverageGrade = 89.5 },
+            new Student { FirstName = "Дмитрий", LastName = "Собойлев", Age = 90, AverageGrade = 89.5 },
+            new Student { FirstName = "Соня", LastName = "Переходникова", Age = 18, AverageGrade = 84.9 },
+            new Student { FirstName = "Никита", LastName = "Горий", Age = 22, AverageGrade = 86.0 },
+            new Student { FirstName = "Добрыня", LastName = "Гарынович", Age = 25, AverageGrade = 85.2 }
+        };
+
+        Console.WriteLine(" Список студентов-хорошистов (балл от 75 до 90) ");
+        var goodStudents = students.Where(s => s.AverageGrade >= 75 && s.AverageGrade <= 90);
+        foreach (var s in goodStudents)
+            Console.WriteLine($"{s.FullName} - {s.AverageGrade}");
+
+        Console.WriteLine("\n Все студенты ");
+        var allNames = students.Select(s => s.FullName);
+        foreach (var name in allNames)
+            Console.WriteLine(name);
+
+        Console.WriteLine("\n-Сортировка по возрасту ");
+        var sortedByAge = students.OrderBy(s => s.Age);
+        foreach (var s in sortedByAge)
+            Console.WriteLine($"{s.FullName} - {s.Age}");
+
+        Console.WriteLine("\n Рейтинг студентов младше 25 лет (по убыванию балла) ");
+        var rating = students
+            .Where(s => s.Age < 25)
+            .OrderByDescending(s => s.AverageGrade)
+            .Select(s => $"{s.FullName} - {s.AverageGrade}");
+
+        foreach (var entry in rating)
+            Console.WriteLine(entry);
+    }
+}
