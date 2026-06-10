@@ -1,0 +1,102 @@
+interface Attackable
+{
+    void takeDamage(int damage);
+    bool isAlive();
+}
+
+interface Attacker
+{
+    void attack(Attackable target);
+}
+
+class Warrior : Attackable, Attacker
+{
+    int health;
+    int strength;
+
+    public Warrior(int health, int strength)
+    {
+        this.health = health;
+        this.strength = strength;
+    }
+
+    public void attack(Attackable target)
+    {
+        Console.WriteLine("Воин атакует");
+        target.takeDamage(strength);
+    }
+
+    public void takeDamage(int damage)
+    {
+        health -= damage;
+        Console.WriteLine($"Воин получает {damage} урона. Здоровье: {health}");
+    }
+
+    public bool isAlive()
+    {
+        return health > 0;
+    }
+}
+
+class Mage : Attackable, Attacker
+{
+    int health;
+    int mana;
+    int spellPower;
+
+    public Mage(int health, int mana, int spellPower)
+    {
+        this.health = health;
+        this.mana = mana;
+        this.spellPower = spellPower;
+    }
+
+    public void attack(Attackable target)
+    {
+        if (mana >= 10)
+        {
+            Console.WriteLine("Маг использует силу");
+            target.takeDamage(spellPower);
+            mana -= 10;
+        }
+        else
+        {
+            Console.WriteLine("Маг атакует слабо");
+            target.takeDamage(1);
+        }
+    }
+
+    public void takeDamage(int damage)
+    {
+        health -= damage;
+        Console.WriteLine($"Маг получает {damage} урона. Здоровье: {health}");
+    }
+
+    public bool isAlive()
+    {
+        return health > 0;
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Warrior warrior = new Warrior(100, 15);
+        Mage mage = new Mage(80, 50, 25);
+
+        while (warrior.isAlive() && mage.isAlive())
+        {
+            warrior.attack(mage);
+            if (mage.isAlive())
+            {
+                mage.attack(warrior);
+            }
+        }
+
+        if (warrior.isAlive())
+            Console.WriteLine("Победил воин");
+        else
+            Console.WriteLine("Победил маг");
+    }
+}
