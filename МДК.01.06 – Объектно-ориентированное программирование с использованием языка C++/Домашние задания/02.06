@@ -1,0 +1,35 @@
+#include <iostream>
+#include <thread>
+#include <chrono>
+
+void printNumbers() {
+    for (int i = 1; i <= 5; ++i) {
+        std::cout << "Поток 1 (числа): " << i << std::endl;
+        // Небольшая задержка для наглядности параллельной работы
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+
+void printLetters() {
+    for (char c = 'A'; c <= 'E'; ++c) {
+        std::cout << "Поток 2 (буквы): " << c << std::endl;
+        // Небольшая задержка для наглядности параллельной работы
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+
+int main() {
+    std::cout << "Главный поток: запускаем два потока..." << std::endl;
+    
+    // Создаём два потока
+    std::thread thread1(printNumbers);
+    std::thread thread2(printLetters);
+    
+    std::cout << "Главный поток: ожидаем завершения потоков..." << std::endl;
+    thread1.join();
+    thread2.join();
+    
+    std::cout << "Главный поток: оба потока завершены!" << std::endl;
+    
+    return 0;
+}
