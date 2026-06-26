@@ -1,0 +1,75 @@
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <chrono>
+#include <vector>
+
+int counter = 0;
+std::mutex mtx;
+
+void incrementWithoutSync(int iterations) {
+    for (int i = 0; i < iterations; ++i) {
+        counter++; 
+    }
+}
+void incrementWithSync(int iterations) {
+    for (int i = 0; i < iterations; ++i) {
+        std::lock_guard<std::mutex> lock(mtx);
+        counter++; 
+    }
+}
+
+template<typename Function>
+double measureTime(Function func, int iterations, int numThreads) {
+    counter = 0; 
+    auto start = std::chrono::high_resolution_clock::now();
+    
+    std::vector<std::thread> threads;
+    for (int i = 0; i < numThreads; ++i) {
+        threads.emplace_back(func, iterations);
+    }
+    
+    for (auto& t : threads) {
+        t.join();
+    }
+    
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    return elapsed.count();
+}
+
+int main() {
+    const int ITERATIONS_PER_THREAD = 100000;
+    const int NUM_THREADS = 2;
+    
+    std::cout << "Сравнение производительности " << std::endl;
+    std::cout << "Количество потоков: " << NUM_THREADS << std::endl;
+    std::cout << "Итераций на поток: " << ITERATIONS_PER_THREAD << std::endl;
+    std::cout << "Всего операций: " << (ITERATIONS_PER_THREAD * NUM_THREADS) << std::endl;
+    std::cout << std::endl;
+    
+    // 1.
+    std::cout << "1. Запуск потоков БЕЗ синхронизации..." << std::endl;
+    double timeWithoutSync = measureTime(incrementWithoutSync, ITERATIONS_PER_THREAD, NUM_THREADS);
+    std::cout << "   Время выполнения: " << timeWithoutSync << " секунд" << std::endl;
+    std::cout << "   Финальное значение counter: " << counter << std::endl;
+    std::cout << "   (Ожидалось: " << (ITERATIONS_PER_THREAD * NUM_THREADS) << ")" << std::endl;
+    std::cout << std::endl;
+    
+    // 2.
+    std::cout << "2. Запуск потоков С синхронизацией" << std::endl;
+    double timeWithSync = measureTime(incrementWithSync, ITERATIONS_PER_THREAD, NUM_THREADS);
+    std::cout << "   Время выполнения: " << timeWithSync << " секунд" << std::endl;
+    std::cout << "   Финальное значение counter: " << counter << std::endl;
+    std::cout << "   (Ожидалось: " << (ITERATIONS_PER_THREAD * NUM_THREADS) << ")" << std::endl;
+    std::cout << std::endl;
+    
+    // 3.
+    std::cout << "Сравнение результатов " << std::endl;
+    std::cout << "Без синхронизации: " << timeWithoutSync << " сек" << std::endl;
+    std::cout << "С синхронизацией:   " << timeWithSync << " сек" << std::endl;
+    std::cout << "Разница: " << (timeWithSync - timeWithoutSync) << " сек" << std::endl;
+    std::cout << "Медленнее в " << (timeWithSync / timeWithoutSync) << " раз" << std::endl;
+    
+    return 0;
+}
